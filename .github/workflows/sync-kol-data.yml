@@ -1,0 +1,39 @@
+name: Sync KOL data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Sync sheet data
+        env:
+          KURO_API_KEY: ${{ secrets.KURO_API_KEY }}
+          KURO_BASE_URL: ${{ secrets.KURO_BASE_URL }}
+          KOL_DATA_URL: ${{ secrets.KOL_DATA_URL }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
+          FEISHU_SHEET_ID: 8KTfQn
+          FEISHU_RANGE: ${{ vars.FEISHU_RANGE || 'A:Z' }}
+        run: npm run sync
+
+      - name: Commit updated data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update KOL sheet data"
+          file_pattern: data/kol-data.js
