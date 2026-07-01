@@ -6,17 +6,17 @@
     <title>명조 플레이 데이터 보드</title>
     <style>
       :root {
-        --bg: #f8ecdc;
-        --panel: rgba(255, 250, 242, 0.92);
-        --panel-solid: #fffaf2;
-        --line: #e0bea2;
-        --line-soft: #ecd7c5;
-        --text: #281812;
-        --muted: #7b5a46;
-        --accent: #8f3e2e;
-        --accent-2: #b56a43;
-        --gold: #c6944d;
-        --shadow: 0 18px 44px rgba(82, 48, 28, 0.1);
+        --bg: #eef1f7;
+        --panel: rgba(246, 248, 252, 0.9);
+        --panel-solid: #f7f9fc;
+        --line: rgba(140, 165, 198, 0.46);
+        --line-soft: rgba(169, 190, 218, 0.38);
+        --text: #162235;
+        --muted: #5e6980;
+        --accent: #2c63ae;
+        --accent-2: #4f8ad2;
+        --gold: #d6b06f;
+        --shadow: 0 24px 56px rgba(21, 36, 65, 0.14);
       }
 
       * {
@@ -27,12 +27,12 @@
         margin: 0;
         min-height: 100vh;
         background:
-          radial-gradient(circle at top left, rgba(202, 141, 82, 0.2), transparent 34rem),
-          radial-gradient(circle at bottom right, rgba(128, 70, 35, 0.14), transparent 30rem),
+          radial-gradient(circle at top left, rgba(88, 137, 211, 0.24), transparent 32rem),
+          radial-gradient(circle at bottom right, rgba(212, 176, 111, 0.2), transparent 30rem),
           var(--bg);
         color: var(--text);
         font-family:
-          Inter, "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+          "SUIT Variable", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
       }
 
       button,
@@ -55,8 +55,8 @@
         inset: 0;
         z-index: -2;
         background:
-          linear-gradient(180deg, rgba(255, 250, 243, 0.92), rgba(248, 236, 220, 0.96)),
-          url("images/cafe-kv-bg.png") top center / cover;
+          linear-gradient(180deg, rgba(238, 243, 250, 0.78), rgba(234, 239, 247, 0.92)),
+          url("images/anni-kv-bg.jpg") center top / cover;
         content: "";
         opacity: 1;
       }
@@ -65,8 +65,12 @@
         position: fixed;
         inset: 0;
         z-index: -1;
-        background-image: radial-gradient(circle at 1px 1px, rgba(127, 73, 38, 0.12) 1.2px, transparent 0);
-        background-size: 22px 22px;
+        background:
+          linear-gradient(130deg, rgba(29, 56, 104, 0.1), transparent 40%),
+          radial-gradient(circle at 1px 1px, rgba(38, 86, 151, 0.14) 1px, transparent 0);
+        background-size:
+          auto,
+          24px 24px;
         content: "";
         pointer-events: none;
       }
@@ -120,12 +124,13 @@
         font-size: clamp(34px, 4vw, 56px);
         line-height: 1.08;
         letter-spacing: 0;
+        font-family: "MaruBuri", "Noto Serif KR", Georgia, serif;
       }
 
       .intro {
         max-width: 760px;
         margin-bottom: 0;
-        color: #6f513f;
+        color: #4d5f7d;
         font-size: 16px;
         line-height: 1.75;
       }
@@ -149,9 +154,9 @@
       .tile,
       .metric,
       .detail {
-        border: 1px solid #e5c7ad;
+        border: 1px solid rgba(145, 169, 201, 0.42);
         border-radius: 8px;
-        background: rgba(255, 250, 242, 0.86);
+        background: linear-gradient(180deg, rgba(251, 253, 255, 0.9), rgba(241, 245, 251, 0.86));
       }
 
       .tile {
@@ -160,7 +165,7 @@
 
       .label {
         margin-bottom: 6px;
-        color: #8f6a4e;
+        color: #6d7f9f;
         font-size: 12px;
         font-weight: 800;
         letter-spacing: 0.03em;
@@ -178,7 +183,7 @@
 
       .tile-detail {
         margin: 0;
-        color: #9d7a63;
+        color: #7c8aa1;
         font-size: 12px;
       }
 
@@ -186,11 +191,12 @@
         position: relative;
         min-height: 250px;
         overflow: hidden;
-        border: 1px solid #e5c7ad;
-        border-radius: 8px;
+        border: 1px solid rgba(140, 165, 198, 0.46);
+        border-radius: 18px;
         background:
-          linear-gradient(180deg, rgba(255, 250, 242, 0.84), rgba(250, 233, 211, 0.9)),
-          radial-gradient(circle at 50% 20%, rgba(204, 145, 79, 0.18), transparent 20rem);
+          linear-gradient(180deg, rgba(247, 250, 255, 0.92), rgba(227, 236, 249, 0.88)),
+          radial-gradient(circle at 50% 18%, rgba(214, 176, 111, 0.26), transparent 18rem);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
 
       .image-frame img {
@@ -198,16 +204,36 @@
         height: 100%;
         object-fit: contain;
         object-position: center bottom;
-        padding: 10px;
+        padding: 14px;
       }
 
       .scene-frame {
-        height: 310px;
+        min-height: 340px;
+        height: 340px;
+        background:
+          linear-gradient(180deg, rgba(241, 246, 254, 0.94), rgba(225, 235, 248, 0.9)),
+          radial-gradient(circle at 50% 0%, rgba(227, 191, 126, 0.24), transparent 17rem);
+      }
+
+      .scene-frame img {
+        object-position: center center;
+      }
+
+      .hero-figure {
+        background:
+          linear-gradient(180deg, rgba(250, 252, 255, 0.96), rgba(230, 238, 249, 0.9)),
+          radial-gradient(circle at 50% 5%, rgba(227, 191, 126, 0.3), transparent 16rem);
+      }
+
+      .hero-figure img {
+        padding: 0;
+        object-position: center bottom;
+        transform: translateY(12px);
       }
 
       .metric {
         padding: 20px;
-        box-shadow: 0 12px 28px rgba(82, 48, 28, 0.08);
+        box-shadow: 0 12px 30px rgba(34, 61, 108, 0.08);
       }
 
       .metric-head {
@@ -242,8 +268,8 @@
       }
 
       .pill {
-        background: #fff1e6;
-        color: #9a452f;
+        background: rgba(224, 237, 255, 0.9);
+        color: #315f9a;
         padding: 7px 12px;
         font-size: 14px;
       }
@@ -276,7 +302,7 @@
 
       .small {
         margin: 0;
-        color: #85634f;
+        color: #6a7890;
         font-size: 14px;
       }
 
@@ -290,10 +316,10 @@
       .filter-btn,
       .head-btn {
         cursor: pointer;
-        border: 1px solid #e3c1a5;
+        border: 1px solid rgba(145, 169, 201, 0.46);
         border-radius: 999px;
-        background: #fffaf2;
-        color: #6f513f;
+        background: rgba(250, 252, 255, 0.96);
+        color: #496178;
         font-size: 12px;
         font-weight: 800;
         transition: 0.16s ease;
@@ -336,9 +362,9 @@
         position: sticky;
         top: 0;
         z-index: 5;
-        background: #ead2b6;
-        color: #4b2d20;
-        box-shadow: 0 1px 0 rgba(131, 82, 48, 0.22);
+        background: linear-gradient(180deg, rgba(210, 225, 246, 0.98), rgba(192, 211, 237, 0.98));
+        color: #173153;
+        box-shadow: 0 1px 0 rgba(67, 101, 156, 0.18);
       }
 
       th,
@@ -359,7 +385,7 @@
       }
 
       tbody tr:hover {
-        background: #fff4e8;
+        background: rgba(225, 236, 252, 0.72);
       }
 
       .rank {
@@ -394,10 +420,10 @@
 
       .status {
         max-width: 180px;
-        border: 1px solid #e4b79b;
+        border: 1px solid rgba(127, 158, 203, 0.46);
         border-radius: 999px;
-        background: #fff1e6;
-        color: #8f3e2e;
+        background: rgba(228, 239, 255, 0.92);
+        color: #315f9a;
         padding: 6px 10px;
         font-size: 12px;
         font-weight: 800;
@@ -414,18 +440,18 @@
       input[type="search"] {
         width: 100%;
         margin-top: 8px;
-        border: 1px solid #dec0a4;
+        border: 1px solid rgba(145, 169, 201, 0.46);
         border-radius: 8px;
         outline: none;
-        background: #fffaf2;
+        background: rgba(250, 252, 255, 0.96);
         padding: 13px 14px;
         color: var(--text);
       }
 
       input[type="search"]:focus {
-        border-color: #9a452f;
+        border-color: #4679c0;
         background: white;
-        box-shadow: 0 0 0 3px #f0d2bf;
+        box-shadow: 0 0 0 3px rgba(114, 159, 223, 0.22);
       }
 
       .matches,
@@ -443,7 +469,7 @@
         gap: 12px;
         border: 1px solid var(--line-soft);
         border-radius: 8px;
-        background: #fffdf8;
+        background: rgba(252, 254, 255, 0.9);
         padding: 11px 12px;
         color: inherit;
         text-decoration: none;
@@ -453,8 +479,8 @@
       .match.active,
       .match:hover,
       .weekly-item:hover {
-        border-color: #c9845f;
-        background: #fff0e5;
+        border-color: #6390cc;
+        background: rgba(228, 239, 255, 0.84);
       }
 
       .match button {
@@ -487,17 +513,45 @@
       .note {
         margin: 16px 0 0;
         border-radius: 8px;
-        background: #fff1e6;
-        color: #6f4d3c;
+        background: rgba(227, 239, 255, 0.92);
+        color: #405773;
         padding: 13px 14px;
         font-size: 14px;
         line-height: 1.6;
       }
 
       .cup-frame {
-        height: 160px;
-        border: 0;
-        border-radius: 0;
+        height: 280px;
+      }
+
+      .cup-frame img {
+        padding: 6px 0 0;
+      }
+
+      .page-art {
+        position: fixed;
+        bottom: 0;
+        z-index: 0;
+        width: min(24vw, 360px);
+        height: min(74vh, 760px);
+        opacity: 0.22;
+        pointer-events: none;
+        filter: drop-shadow(0 28px 36px rgba(17, 34, 63, 0.15));
+      }
+
+      .page-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center bottom;
+      }
+
+      .art-left {
+        left: -28px;
+      }
+
+      .art-right {
+        right: -20px;
       }
 
       .weekly-item span:first-child {
@@ -527,6 +581,10 @@
 
         .scene-frame {
           height: 260px;
+        }
+
+        .page-art {
+          display: none;
         }
       }
 
@@ -558,6 +616,12 @@
   </head>
   <body>
     <main class="page">
+      <div class="page-art art-left" aria-hidden="true">
+        <img src="images/anni-denia.png" alt="" />
+      </div>
+      <div class="page-art art-right" aria-hidden="true">
+        <img src="images/anni-hiyuki.png" alt="" />
+      </div>
       <div class="wrap">
         <header class="hero">
           <section class="panel hero-main">
@@ -585,13 +649,13 @@
                 </div>
               </div>
             </div>
-            <div class="image-frame">
-              <img src="images/cafe-dessert.png" alt="" />
+            <div class="image-frame hero-figure">
+              <img src="images/anni-aemeath.png" alt="" />
             </div>
           </section>
           <section class="panel">
             <div class="image-frame scene-frame">
-              <img src="images/cafe-scene.png" alt="" />
+              <img src="images/anni-sd-kv.jpg" alt="" />
             </div>
           </section>
         </header>
@@ -647,7 +711,7 @@
 
             <section class="panel">
               <div class="image-frame cup-frame">
-                <img src="images/cafe-cup.png" alt="" />
+                <img src="images/anni-hiyuki.png" alt="" />
               </div>
               <div class="side-section">
                 <p class="kicker">Weekly Ranking</p>
