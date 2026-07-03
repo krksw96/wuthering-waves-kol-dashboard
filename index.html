@@ -1351,7 +1351,7 @@
       </div>
     </main>
 
-    <script src="data/kol-data.js"></script>
+    <script>document.write('<script src="data/kol-data.js?v=' + Date.now() + '"><\/script>');</script>
     <script>
       const records = Array.isArray(window.KOL_RECORDS) ? window.KOL_RECORDS : [];
       const labels = {
