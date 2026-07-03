@@ -176,9 +176,9 @@ function normalizeRecord(row, index) {
     avgViewers: number(get("avgViewers", "Average", "평균 시청자", "평균시청자", "평균")),
     viewershipTotal: number(get("viewershipTotal", "Viewership", "뷰어십", "누적 뷰어십")),
     viewershipRank: number(get("viewershipRank", "Rank", "랭크", "순위")) || index + 1,
-    notes: text(get("notes", "메모", "비고", "备注")),
+    notes: text(get("notes", "메모", "비고", "备注", "최근 유튜브 내용 요약", "유튜브 내용 요약", "요약")),
     updatedAt: text(get("updatedAt", "업데이트", "갱신일")) || new Date().toISOString(),
-    latestDate: text(get("latestDate", "Latest", "최근 방송", "최근방송", "날짜")),
+    latestDate: text(get("latestDate", "Latest", "최근 방송", "최근방송", "방송 날짜", "방송날짜", "날짜")),
     youtube: text(get("youtube", "YouTube", "유튜브")),
     youtubeAvgViews: text(get("youtubeAvgViews", "평균 조회수", "평균조회수", "YouTube Average")),
   };
