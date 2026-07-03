@@ -1379,7 +1379,7 @@
       }
 
       function youtubeHref(record) {
-        const candidates = [record.youtube, record.youtubeAvgViews].filter(Boolean);
+        const candidates = [record.youtubeUrl, record.youtube, record.youtubeAvgViews].filter(Boolean);
         const direct = candidates.find((value) => /^https?:\/\//i.test(value));
         if (direct) return direct;
         const youtubePath = candidates.find((value) => /(?:youtube\.com|youtu\.be)/i.test(value));

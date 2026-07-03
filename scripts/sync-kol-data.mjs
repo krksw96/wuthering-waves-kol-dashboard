@@ -103,9 +103,9 @@ function rowsFromJson(payload) {
 function tableToObjects(values) {
   const [headers = [], ...rows] = values;
   return rows
-    .filter((row) => row.some((cell) => String(cell ?? "").trim()))
+    .filter((row) => row.some((cell) => text(cell)))
     .map((row) =>
-      Object.fromEntries(headers.map((header, index) => [String(header || `col_${index + 1}`).trim(), row[index] ?? ""])),
+      Object.fromEntries(headers.map((header, index) => [text(header) || "col_" + (index + 1), row[index] ?? ""])),
     );
 }
 
@@ -146,52 +146,130 @@ function parseCsv(csv) {
 }
 
 function normalizeRows(rows) {
-  return rows
+  const records = rows
     .map((row, index) => normalizeRecord(row, index))
     .filter((record) => record.creator);
+  return aggregateRecords(records);
 }
 
 function normalizeRecord(row, index) {
+  const normalized = Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [normalizeKey(key), value]),
+  );
   const get = (...names) => {
     for (const name of names) {
-      if (row[name] !== undefined && row[name] !== null && String(row[name]).trim() !== "") return row[name];
+      if (row[name] !== undefined && row[name] !== null && text(row[name])) return row[name];
     }
-    const normalized = Object.fromEntries(
-      Object.entries(row).map(([key, value]) => [normalizeKey(key), value]),
-    );
     for (const name of names) {
       const value = normalized[normalizeKey(name)];
-      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+      if (value !== undefined && value !== null && text(value)) return value;
     }
     return "";
   };
 
-  const creator = text(get("creator", "KOL", "KOL 이름", "이름", "닉네임", "主播", "达人", "kol_name"));
+  const creator = text(get("creator", "KOL", "KOL \uC774\uB984", "\uC774\uB984", "\uB2C9\uB124\uC784", "\u4E3B\u64AD", "\u8FBE\u4EBA", "kol_name"));
+  const latestDate = text(get("latestDate", "Latest", "\uCD5C\uADFC \uBC29\uC1A1", "\uCD5C\uADFC\uBC29\uC1A1", "\uBC29\uC1A1 \uB0A0\uC9DC", "\uBC29\uC1A1\uB0A0\uC9DC", "\uB0A0\uC9DC"));
+  const rawStreams = number(get("streams", "Play", "\uD50C\uB808\uC774 \uD69F\uC218", "\uD50C\uB808\uC774", "\uBC29\uC1A1 \uD69F\uC218", "\uBC29\uC1A1 \uC218", "\uBC29\uC1A1\uC218"));
+  const isStreamRecord = Boolean(latestDate || text(get("\uB370\uC774\uD130 \uB9C1\uD06C", "data link", "streamLink")) || text(get("\uC21C\uC704", "Rank")));
+  const youtubeCell = get("youtube", "YouTube", "\uC720\uD29C\uBE0C");
   return {
     creator,
-    platform: text(get("platform", "플랫폼", "平台")) || "Feishu",
-    streams: number(get("streams", "Play", "플레이 횟수", "플레이", "방송 횟수")),
-    playHours: number(get("playHours", "Hours", "플레이 시간", "방송 시간", "시간")),
-    maxViewers: number(get("maxViewers", "Peak", "최고 시청자", "최고시청자", "최고")),
-    avgViewers: number(get("avgViewers", "Average", "평균 시청자", "평균시청자", "평균")),
-    viewershipTotal: number(get("viewershipTotal", "Viewership", "뷰어십", "누적 뷰어십")),
-    viewershipRank: number(get("viewershipRank", "Rank", "랭크", "순위")) || index + 1,
-    notes: text(get("notes", "메모", "비고", "备注", "최근 유튜브 내용 요약", "유튜브 내용 요약", "요약")),
-    updatedAt: text(get("updatedAt", "업데이트", "갱신일")) || new Date().toISOString(),
-    latestDate: text(get("latestDate", "Latest", "최근 방송", "최근방송", "방송 날짜", "방송날짜", "날짜")),
-    youtube: text(get("youtube", "YouTube", "유튜브")),
-    youtubeAvgViews: text(get("youtubeAvgViews", "평균 조회수", "평균조회수", "YouTube Average")),
+    platform: text(get("platform", "\uD50C\uB7AB\uD3FC", "\u5E73\u53F0")) || "Feishu",
+    streams: rawStreams || (isStreamRecord ? 1 : 0),
+    playHours: number(get("playHours", "Hours", "\uD50C\uB808\uC774 \uC2DC\uAC04", "\uBC29\uC1A1 \uC2DC\uAC04", "\uC2DC\uAC04")),
+    maxViewers: number(get("maxViewers", "Peak", "\uCD5C\uACE0 \uC2DC\uCCAD\uC790", "\uCD5C\uACE0\uC2DC\uCCAD\uC790", "\uCD5C\uACE0")),
+    avgViewers: number(get("avgViewers", "Average", "\uD3C9\uADE0 \uC2DC\uCCAD\uC790", "\uD3C9\uADE0\uC2DC\uCCAD\uC790", "\uD3C9\uADE0")),
+    viewershipTotal: number(get("viewershipTotal", "Viewership", "\uBDF0\uC5B4\uC2ED", "\uB204\uC801 \uBDF0\uC5B4\uC2ED")),
+    viewershipRank: number(get("viewershipRank", "Rank", "\uC21C\uC704")) || index + 1,
+    notes: text(get("notes", "\uBA54\uBAA8", "\uBE44\uACE0", "\u5907\u6CE8", "\uCD5C\uADFC \uC720\uD29C\uBE0C \uB0B4\uC6A9 \uC694\uC57D", "\uC720\uD29C\uBE0C \uB0B4\uC6A9 \uC694\uC57D", "\uC694\uC57D")),
+    updatedAt: text(get("updatedAt", "\uC5C5\uB370\uC774\uD2B8", "\uAC31\uC2E0\uC77C")) || new Date().toISOString(),
+    latestDate,
+    youtube: text(youtubeCell),
+    youtubeUrl: link(youtubeCell),
+    youtubeAvgViews: text(get("youtubeAvgViews", "\uC720\uD29C\uBE0C \uD3C9\uADE0 \uC870\uD68C\uC218", "\uD3C9\uADE0 \uC870\uD68C\uC218", "\uD3C9\uADE0\uC870\uD68C\uC218", "YouTube Average")),
   };
 }
 
+function aggregateRecords(records) {
+  const byCreator = new Map();
+  for (const record of records) {
+    const current = byCreator.get(record.creator);
+    if (!current) {
+      byCreator.set(record.creator, { ...record });
+      continue;
+    }
+
+    current.streams += record.streams || 0;
+    current.playHours += record.playHours || 0;
+    current.maxViewers = Math.max(current.maxViewers || 0, record.maxViewers || 0);
+    current.viewershipTotal += record.viewershipTotal || 0;
+
+    if (dateOrder(record.latestDate) >= dateOrder(current.latestDate)) {
+      current.latestDate = record.latestDate || current.latestDate;
+      current.updatedAt = record.updatedAt || current.updatedAt;
+      current.notes = record.notes || current.notes;
+      current.youtube = record.youtube || current.youtube;
+      current.youtubeUrl = record.youtubeUrl || current.youtubeUrl;
+      current.youtubeAvgViews = record.youtubeAvgViews || current.youtubeAvgViews;
+    } else {
+      current.notes ||= record.notes;
+      current.youtube ||= record.youtube;
+      current.youtubeUrl ||= record.youtubeUrl;
+      current.youtubeAvgViews ||= record.youtubeAvgViews;
+    }
+  }
+
+  return [...byCreator.values()]
+    .map((record) => ({
+      ...record,
+      playHours: roundOne(record.playHours),
+      avgViewers: record.playHours > 0 ? Math.round(record.viewershipTotal / record.playHours) : record.avgViewers,
+    }))
+    .sort((a, b) => (b.viewershipTotal || 0) - (a.viewershipTotal || 0))
+    .map((record, index) => ({ ...record, viewershipRank: index + 1 }));
+}
+
 function text(value) {
-  return String(value ?? "").trim();
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value).trim();
+  if (Array.isArray(value)) return value.map(text).filter(Boolean).join(" ").trim();
+  if (typeof value === "object") {
+    if (Array.isArray(value.rich_text)) return text(value.rich_text);
+    if (Array.isArray(value.value)) return text(value.value);
+    for (const key of ["text", "value", "name", "title", "label"]) {
+      if (value[key] != null) return text(value[key]);
+    }
+  }
+  return "";
+}
+
+function link(value) {
+  if (value == null) return "";
+  if (typeof value === "string") return /https?:\/\//i.test(value) ? value.trim() : "";
+  if (Array.isArray(value)) return value.map(link).find(Boolean) || "";
+  if (typeof value === "object") {
+    if (Array.isArray(value.rich_text)) return link(value.rich_text);
+    if (Array.isArray(value.value)) return link(value.value);
+    for (const key of ["link", "url", "href"]) {
+      if (typeof value[key] === "string" && value[key]) return value[key].trim();
+    }
+  }
+  return "";
 }
 
 function number(value) {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
-  const parsed = Number(String(value ?? "").replace(/,/g, "").replace(/[^0-9.-]/g, ""));
+  const parsed = Number(text(value).replace(/,/g, "").replace(/[^0-9.-]/g, ""));
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function dateOrder(label) {
+  const match = String(label || "").match(new RegExp("(\\d{1,2})\\.(\\d{1,2})"));
+  return match ? Number(match[1]) * 100 + Number(match[2]) : 0;
+}
+
+function roundOne(value) {
+  return Math.round((Number(value) || 0) * 10) / 10;
 }
 
 function normalizeKey(key) {
