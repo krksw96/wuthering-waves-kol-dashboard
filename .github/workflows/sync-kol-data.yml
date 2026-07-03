@@ -25,6 +25,7 @@ jobs:
           KURO_API_KEY: ${{ secrets.KURO_API_KEY }}
           KURO_BASE_URL: ${{ secrets.KURO_BASE_URL }}
           KOL_DATA_URL: ${{ secrets.KOL_DATA_URL }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
