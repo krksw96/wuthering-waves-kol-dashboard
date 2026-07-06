@@ -306,7 +306,7 @@
       }
 
       .summary-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         margin-top: 18px;
       }
 
@@ -714,17 +714,6 @@
         gap: 14px;
       }
 
-      .status {
-        max-width: 200px;
-        border: 1px solid rgba(161, 175, 241, 0.38);
-        border-radius: 999px;
-        background: linear-gradient(135deg, rgba(238, 245, 255, 0.96), rgba(251, 232, 242, 0.94));
-        color: #4960a8;
-        padding: 7px 11px;
-        font-size: 12px;
-        font-weight: 900;
-      }
-
       label {
         display: block;
         margin-top: 18px;
@@ -980,7 +969,6 @@
         .detail,
         .match,
         input[type="search"],
-        .status,
         .note {
           border-radius: 20px;
         }
@@ -1070,11 +1058,6 @@
                   <div class="tile-value" id="summary-week">-</div>
                   <p class="tile-detail">&#xCD5C;&#xC2E0; &#xC9D1;&#xACC4; &#xAD6C;&#xAC04;</p>
                 </div>
-                <div class="tile">
-                  <div class="label">정렬 기준</div>
-                  <div class="tile-value" id="summary-sort">뷰어십</div>
-                  <p class="tile-detail">&#xD604;&#xC7AC; &#xC815;&#xB82C; &#xAE30;&#xC900;</p>
-                </div>
               </div>
               <section class="metric-grid" id="metrics"></section>
             </div>
@@ -1122,7 +1105,6 @@
                   <p class="kicker">KOL Search</p>
                   <h2>상세 정보</h2>
                 </div>
-                <span class="status">&#xCD5C;&#xC2E0; &#xC5D1;&#xC140; &#xB370;&#xC774;&#xD130; &#xBC18;&#xC601;</span>
               </div>
               <label>
                 이름 검색
@@ -1250,11 +1232,11 @@
         const topMax = topBy("maxViewers");
         const topAvg = topBy("avgViewers");
         const metrics = [
-          ["1등", "주간 뷰어십 1등", topViewership.creator || "-", `${format(topViewership.viewershipTotal)} 뷰어십`],
-          ["1등", "주간 플레이 횟수 1등", topStreams.creator || "-", `${format(topStreams.streams)}회`],
-          ["1등", "주간 방송 시간 1등", topHours.creator || "-", `${format(topHours.playHours)}시간`],
-          ["1등", "주간 최고 시청자 1등", topMax.creator || "-", `${format(topMax.maxViewers)}명`],
-          ["1등", "주간 평균 시청자 1등", topAvg.creator || "-", `${format(topAvg.avgViewers)}명`],
+          ["1등", "주간 뷰어십", topViewership.creator || "-", `${format(topViewership.viewershipTotal)} 뷰어십`],
+          ["1등", "주간 플레이 횟수", topStreams.creator || "-", `${format(topStreams.streams)}회`],
+          ["1등", "주간 방송 시간", topHours.creator || "-", `${format(topHours.playHours)}시간`],
+          ["1등", "주간 최고 시청자", topMax.creator || "-", `${format(topMax.maxViewers)}명`],
+          ["1등", "주간 평균 시청자", topAvg.creator || "-", `${format(topAvg.avgViewers)}명`],
         ];
         document.getElementById("metrics").innerHTML = metrics
           .map(
@@ -1371,13 +1353,13 @@
 
       function syncRankingHeight() {
         const rankingPanel = document.querySelector(".ranking-panel");
-        const selectedPanel = document.getElementById("selected-panel");
-        if (!rankingPanel || !selectedPanel) return;
+        const sidePanel = document.querySelector(".content aside");
+        if (!rankingPanel || !sidePanel) return;
         if (window.matchMedia("(max-width: 1200px)").matches) {
           rankingPanel.style.removeProperty("--ranking-panel-height");
           return;
         }
-        const height = Math.ceil(selectedPanel.getBoundingClientRect().height);
+        const height = Math.ceil(sidePanel.getBoundingClientRect().height);
         if (height > 0) {
           rankingPanel.style.setProperty("--ranking-panel-height", `${height}px`);
         }
@@ -1385,7 +1367,6 @@
 
       function updateSort(key) {
         rankingKey = key;
-        document.getElementById("summary-sort").textContent = labels[rankingKey];
         document.getElementById("active-label").textContent = labels[rankingKey];
         document.querySelectorAll(".head-btn").forEach((button) => {
           const active = button.dataset.key === rankingKey;
