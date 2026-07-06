@@ -443,6 +443,16 @@
         transform: translateY(0);
       }
 
+      .side-figure {
+        min-height: 420px;
+      }
+
+      .side-figure img {
+        padding: 0;
+        object-fit: cover;
+        object-position: center top;
+      }
+
       .metric {
         padding: 22px 22px 20px;
         min-width: 0;
@@ -800,6 +810,15 @@
           rgba(255, 255, 255, 0.86);
       }
 
+      .hero-main .selected-shell {
+        min-height: 0;
+        align-self: stretch;
+      }
+
+      .hero-main .selected-card {
+        height: 100%;
+      }
+
       .selected-card {
         position: relative;
         overflow: hidden;
@@ -912,6 +931,10 @@
         .hero-main,
         .content {
           grid-template-columns: 1fr;
+        }
+
+        .side-figure {
+          min-height: 360px;
         }
 
         aside {
@@ -1061,9 +1084,7 @@
               </div>
               <section class="metric-grid" id="metrics"></section>
             </div>
-            <div class="image-frame hero-figure">
-              <img src="images/anni-aemeath-close.png" alt="" />
-            </div>
+            <section class="panel side-section selected-shell" id="selected-panel"></section>
           </section>
         </header>
 
@@ -1113,7 +1134,9 @@
               <div class="matches" id="matches"></div>
             </section>
 
-            <section class="panel side-section selected-shell" id="selected-panel"></section>
+            <div class="image-frame side-figure">
+              <img src="images/anni-aemeath-close.png" alt="" />
+            </div>
 
           </aside>
         </section>
