@@ -1258,7 +1258,7 @@
             (record, index) => `
               <tr class="ranking-row ${selectedCreator === record.creator ? "selected" : ""}" data-ranking-name="${escapeHtml(record.creator)}" tabindex="0" aria-label="${escapeHtml(record.creator)} 선택">
                 <td class="rank">${index + 1}</td>
-                <td><button type="button" class="kol-link table-kol" data-ranking-name="${escapeHtml(record.creator)}">${escapeHtml(record.creator)}</button></td>
+                <td><a class="kol-link table-kol" href="${youtubeHref(record)}" target="_blank" rel="noreferrer" aria-label="${escapeHtml(record.creator)} 유튜브 열기">${escapeHtml(record.creator)}</a></td>
                 <td class="num"><strong>${format(record.viewershipTotal)}</strong></td>
                 <td class="num">${format(record.streams)}</td>
                 <td class="num">${record.playHours || 0}</td>
@@ -1381,6 +1381,7 @@
         const sortControl = event.target.closest("[data-key]");
         const key = sortControl?.dataset?.key;
         if (key && labels[key]) updateSort(key);
+        if (event.target.closest("a.table-kol")) return;
         const rankingControl = event.target.closest("[data-ranking-name]");
         const rankingName = rankingControl?.dataset?.rankingName;
         if (rankingName) {
@@ -1396,6 +1397,7 @@
 
       document.addEventListener("keydown", (event) => {
         if (event.key !== "Enter" && event.key !== " ") return;
+        if (event.target.closest("a.table-kol")) return;
         const rankingControl = event.target.closest("[data-ranking-name]");
         const rankingName = rankingControl?.dataset?.rankingName;
         if (!rankingName) return;
