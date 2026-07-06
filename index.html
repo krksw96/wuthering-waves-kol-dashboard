@@ -122,9 +122,7 @@
       }
 
       .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 360px;
-        gap: 20px;
+        display: block;
       }
 
       .hero-main {
@@ -313,8 +311,8 @@
       }
 
       .metric-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        margin: 20px 0;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin: 26px 0 0;
       }
 
       .tile,
@@ -425,27 +423,6 @@
         padding: 14px;
       }
 
-      .scene-frame {
-        min-height: 340px;
-        height: 340px;
-        background:
-          linear-gradient(180deg, rgba(255, 251, 255, 0.96), rgba(233, 241, 255, 0.86)),
-          radial-gradient(circle at 50% 0%, rgba(227, 191, 126, 0.18), transparent 18rem);
-      }
-
-      .scene-frame::after {
-        inset: auto 10px 10px auto;
-        width: 150px;
-        height: 150px;
-        background: radial-gradient(circle, rgba(247, 142, 195, 0.18), transparent 70%);
-      }
-
-      .scene-frame img {
-        object-position: center center;
-        padding: 0;
-        transform: scale(1.04);
-      }
-
       .hero-figure {
         background:
           linear-gradient(180deg, rgba(255, 249, 255, 0.98), rgba(233, 239, 255, 0.92)),
@@ -468,6 +445,7 @@
 
       .metric {
         padding: 22px 22px 20px;
+        min-width: 0;
         box-shadow: 0 18px 36px rgba(84, 98, 179, 0.1);
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       }
@@ -518,6 +496,13 @@
         padding: 7px 12px;
         font-size: 14px;
         border: 1px solid rgba(160, 178, 240, 0.28);
+      }
+
+      .metric .pill {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .content {
@@ -749,6 +734,14 @@
         transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
       }
 
+      .match {
+        width: 100%;
+        cursor: pointer;
+        appearance: none;
+        font: inherit;
+        text-align: left;
+      }
+
       .match.active,
       .match:hover,
       .weekly-item:hover {
@@ -758,15 +751,21 @@
         box-shadow: 0 14px 28px rgba(95, 108, 212, 0.1);
       }
 
-      .match button {
-        cursor: pointer;
-        border: 0;
+      .match-rank {
+        flex-shrink: 0;
         border-radius: 999px;
         background: rgba(244, 228, 239, 0.94);
         color: #bf5c89;
         padding: 6px 9px;
         font-size: 12px;
         font-weight: 900;
+      }
+
+      .match-name {
+        overflow: hidden;
+        font-weight: 900;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .selected-shell {
@@ -910,11 +909,6 @@
         font-weight: 900;
       }
 
-        .idol-chip-copy {
-          max-width: 68%;
-        }
-      }
-
       @media (max-width: 1200px) {
         .hero,
         .hero-main,
@@ -926,12 +920,12 @@
           position: static;
         }
 
-        .scene-frame {
-          height: 280px;
-        }
-
         .page-art {
           display: none;
+        }
+
+        .metric-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
         }
       }
 
@@ -942,7 +936,6 @@
         }
 
         .summary-grid,
-        .metric-grid,
         .detail-grid,
         .selected-hero {
           grid-template-columns: 1fr;
@@ -989,6 +982,10 @@
           width: 150px;
           height: 128px;
         }
+
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
       }
     
 
@@ -999,103 +996,6 @@
 
       .summary-grid {
         margin-top: 28px;
-      }
-
-      .stage-panel {
-        display: grid;
-        grid-template-rows: minmax(0, 1fr) auto;
-      }
-
-      .stage-copy {
-        background: linear-gradient(135deg, rgba(255, 247, 252, 0.72), rgba(239, 245, 255, 0.74));
-      }
-
-      .stage-collage {
-        min-height: 430px;
-        height: 430px;
-        padding: 0;
-        background:
-          linear-gradient(180deg, rgba(255, 251, 255, 0.96), rgba(232, 240, 255, 0.88)),
-          radial-gradient(circle at 50% 10%, rgba(248, 140, 194, 0.18), transparent 16rem);
-      }
-
-      .stage-collage::before {
-        inset: 16px;
-        border-radius: 26px;
-      }
-
-      .stage-collage::after {
-        inset: auto auto 16px 16px;
-        width: 160px;
-        height: 160px;
-        background: radial-gradient(circle, rgba(104, 153, 243, 0.18), transparent 72%);
-      }
-
-      .stage-collage img {
-        padding: 0;
-      }
-
-      .scene-layer {
-        position: absolute;
-        z-index: 1;
-        pointer-events: none;
-      }
-
-      .scene-bg {
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        opacity: 0.42;
-      }
-
-      .scene-sd {
-        left: -28px;
-        right: -10px;
-        bottom: -8px;
-        width: calc(100% + 38px);
-        height: 170px;
-        object-fit: contain;
-        object-position: center bottom;
-        opacity: 0.9;
-      }
-
-      .scene-a,
-      .scene-d,
-      .scene-h {
-        height: 290px;
-        object-fit: contain;
-        object-position: center bottom;
-        filter: drop-shadow(0 20px 26px rgba(63, 73, 143, 0.16));
-      }
-
-      .scene-a {
-        left: -8px;
-        bottom: 52px;
-      }
-
-      .scene-d {
-        right: -10px;
-        bottom: 54px;
-      }
-
-      .scene-h {
-        left: 50%;
-        bottom: 74px;
-        transform: translateX(-50%);
-      }
-
-      .scene-card {
-        top: 18px;
-        right: 18px;
-        width: 108px;
-        height: 132px;
-        object-fit: cover;
-        object-position: center;
-        border: 1px solid rgba(164, 173, 243, 0.28);
-        border-radius: 20px;
-        box-shadow: 0 18px 34px rgba(84, 98, 179, 0.12);
       }
 
       .search-panel .matches,
@@ -1113,89 +1013,14 @@
 
       .ranking-panel .table-scroll {
         flex: 1;
-        min-height: 980px;
+        min-height: 1020px;
       }
 
       @media (max-width: 1200px) {
-        .stage-collage,
         .ranking-panel .table-scroll {
           min-height: auto;
           height: auto;
         }
-
-        .stage-collage {
-          height: 400px;
-        }
-      }
-
-      @media (max-width: 820px) {
-        .stage-collage {
-          height: 340px;
-          min-height: 340px;
-        }
-
-        .scene-a,
-        .scene-d,
-        .scene-h {
-          height: 210px;
-        }
-
-        .scene-card {
-          width: 84px;
-          height: 100px;
-        }
-      }
-
-    
-
-      .stage-panel::before {
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.08));
-      }
-
-      .stage-panel::after {
-        inset: 14px;
-      }
-
-      .stage-copy h2 {
-        margin-bottom: 8px;
-      }
-
-      .stage-copy .small {
-        line-height: 1.7;
-      }
-
-      .stage-collage {
-        overflow: hidden;
-      }
-
-      .stage-collage .scene-a {
-        left: -28px;
-        height: 316px;
-      }
-
-      .stage-collage .scene-d {
-        right: -26px;
-        height: 316px;
-      }
-
-      .stage-collage .scene-h {
-        height: 304px;
-      }
-
-      .stage-collage .scene-card {
-        top: 16px;
-        right: 16px;
-        width: 120px;
-        height: 144px;
-        transform: rotate(6deg);
-      }
-
-      .stage-collage .scene-card::before {
-        content: "";
-      }
-
-      .ranking-panel .table-scroll {
-        min-height: 1020px;
       }
 
     </style>
@@ -1215,7 +1040,7 @@
               <p class="kicker">Wuthering Waves KOL Board</p>
               <h1><span class="gradient">KOL play data</span></h1>
               <p class="intro">
-                Latest Excel snapshot for Wuthering Waves KOL play data, arranged for quick comparison across play count, stream hours, viewer peaks, and total viewership.
+                명조 KOL 플레이 데이터를 최신 엑셀 스냅샷 기준으로 정리해 플레이 횟수, 방송 시간, 최고 시청자, 평균 시청자, 총 뷰어십을 빠르게 비교할 수 있어요.
               </p>
               <div class="summary-grid">
                 <div class="tile">
@@ -1234,29 +1059,13 @@
                   <p class="tile-detail">&#xD604;&#xC7AC; &#xC815;&#xB82C; &#xAE30;&#xC900;</p>
                 </div>
               </div>
+              <section class="metric-grid" id="metrics"></section>
             </div>
             <div class="image-frame hero-figure">
               <img src="images/anni-aemeath-close.png" alt="" />
             </div>
           </section>
-          <section class="panel stage-panel">
-            <div class="image-frame scene-frame stage-collage">
-              <img class="scene-layer scene-bg" src="images/anni-sd-bg.jpg" alt="" />
-              <img class="scene-layer scene-sd" src="images/anni-sd-booth.png" alt="" />
-              <img class="scene-layer scene-a" src="images/anni-kv-aemeath.png" alt="" />
-              <img class="scene-layer scene-d" src="images/anni-kv-denia.png" alt="" />
-              <img class="scene-layer scene-h" src="images/anni-kv-hiyuki.png" alt="" />
-              <img class="scene-layer scene-card" src="images/anni-sd-kv.jpg" alt="" />
-            </div>
-            <div class="side-section stage-copy">
-              <p class="kicker">Official Stage</p>
-              <h2>Anniversary Visual Stage</h2>
-              <p class="small">&#xACF5;&#xC2DD; KV, SD, &#xCE90;&#xB9AD;&#xD130; &#xCEF7;&#xC744; &#xACB9;&#xCCD0;&#xC11C; &#xC624;&#xB978;&#xCABD; &#xC0C1;&#xB2E8; &#xC601;&#xC5ED;&#xC744; &#xB354; &#xD48D;&#xC131;&#xD558;&#xAC8C; &#xCC44;&#xC6E0;&#xC5B4;.</p>
-            </div>
-          </section>
         </header>
-
-        <section class="metric-grid" id="metrics"></section>
 
         <section class="content">
           <section class="panel ranking-panel">
@@ -1336,6 +1145,7 @@
       const filterKeys = ["viewership", "streams", "playHours", "maxViewers", "avgViewers", "youtube", "latest"];
       let rankingKey = "viewership";
       let query = "";
+      let selectedCreator = "";
 
       const ranked = [...records].sort((a, b) => {
         if (a.viewershipRank && b.viewershipRank) return a.viewershipRank - b.viewershipRank;
@@ -1343,9 +1153,20 @@
       });
 
       const weekly = getWeeklyRanking(records, ranked);
+      selectedCreator = ranked[0]?.creator || "";
 
       function format(value) {
         return Number(value || 0).toLocaleString();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[char]);
       }
 
       function youtubeHref(record) {
@@ -1414,20 +1235,27 @@
       }
 
       function renderMetrics() {
-        const topBy = (key) => [...records].sort((a, b) => Number(b[key] || 0) - Number(a[key] || 0))[0] || {};
+        const weeklySource = weekly.records.length ? weekly.records : ranked;
+        const topBy = (key) => sortByKey(weeklySource, key)[0] || {};
+        const topViewership = topBy("viewership");
+        const topStreams = topBy("streams");
+        const topHours = topBy("playHours");
+        const topMax = topBy("maxViewers");
+        const topAvg = topBy("avgViewers");
         const metrics = [
-          ["01", "가장 많이 플레이", topBy("streams").creator || "-", `${topBy("streams").streams || 0}회`],
-          ["02", "가장 오래 플레이", topBy("playHours").creator || "-", `${topBy("playHours").playHours || 0}시간`],
-          ["03", "최고 시청자", topBy("maxViewers").creator || "-", `${format(topBy("maxViewers").maxViewers)}명`],
-          ["04", "평균 시청자", topBy("avgViewers").creator || "-", `${format(topBy("avgViewers").avgViewers)}명`],
+          ["1등", "주간 뷰어십 1등", topViewership.creator || "-", `${format(topViewership.viewershipTotal)} 뷰어십`],
+          ["1등", "주간 플레이 횟수 1등", topStreams.creator || "-", `${format(topStreams.streams)}회`],
+          ["1등", "주간 방송 시간 1등", topHours.creator || "-", `${format(topHours.playHours)}시간`],
+          ["1등", "주간 최고 시청자 1등", topMax.creator || "-", `${format(topMax.maxViewers)}명`],
+          ["1등", "주간 평균 시청자 1등", topAvg.creator || "-", `${format(topAvg.avgViewers)}명`],
         ];
         document.getElementById("metrics").innerHTML = metrics
           .map(
             ([badge, label, value, detail]) => `
               <article class="metric">
-                <div class="metric-head"><div class="label">${label}</div><span class="badge">${badge}</span></div>
-                <div class="metric-value">${value}</div>
-                <span class="pill">${detail}</span>
+                <div class="metric-head"><div class="label">${escapeHtml(label)}</div><span class="badge">${escapeHtml(badge)}</span></div>
+                <div class="metric-value">${escapeHtml(value)}</div>
+                <span class="pill">${escapeHtml(detail)}</span>
               </article>
             `,
           )
@@ -1463,16 +1291,19 @@
 
       function renderMatches() {
         const normalized = query.trim().toLowerCase();
-        const matches = (normalized ? ranked.filter((record) => record.creator.toLowerCase().includes(normalized)) : ranked).slice(0, 8);
-        const selected = normalized ? matches[0] : ranked[0];
+        const matches = (normalized ? ranked.filter((record) => record.creator.toLowerCase().includes(normalized)) : ranked).slice(0, 3);
+        if (!matches.some((record) => record.creator === selectedCreator)) {
+          selectedCreator = matches[0]?.creator || ranked[0]?.creator || "";
+        }
+        const selected = ranked.find((record) => record.creator === selectedCreator) || matches[0] || ranked[0];
         document.getElementById("matches").innerHTML = matches.length
           ? matches
               .map(
                 (record) => `
-                  <div class="match ${selected && selected.creator === record.creator ? "active" : ""}">
-                    <a class="kol-link" href="${youtubeHref(record)}" target="_blank" rel="noreferrer">${record.creator}</a>
-                    <button type="button" data-name="${record.creator}">#${record.viewershipRank}</button>
-                  </div>
+                  <button type="button" class="match ${selected && selected.creator === record.creator ? "active" : ""}" data-name="${escapeHtml(record.creator)}" aria-pressed="${selected && selected.creator === record.creator ? "true" : "false"}">
+                    <span class="match-name">${escapeHtml(record.creator)}</span>
+                    <span class="match-rank">#${escapeHtml(record.viewershipRank)}</span>
+                  </button>
                 `,
               )
               .join("")
@@ -1558,12 +1389,13 @@
       }
 
       document.addEventListener("click", (event) => {
-        const key = event.target.dataset?.key;
+        const sortControl = event.target.closest("[data-key]");
+        const key = sortControl?.dataset?.key;
         if (key && labels[key]) updateSort(key);
-        const name = event.target.dataset?.name;
+        const matchControl = event.target.closest("[data-name]");
+        const name = matchControl?.dataset?.name;
         if (name) {
-          query = name;
-          document.getElementById("query").value = name;
+          selectedCreator = name;
           renderMatches();
         }
       });
