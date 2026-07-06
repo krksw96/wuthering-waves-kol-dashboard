@@ -825,7 +825,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: center top;
+        object-position: center;
       }
 
       .detail-grid {
@@ -1480,7 +1480,7 @@
         renderSelected(selected);
       }
 
-      function portraitForRecord(record) {
+      function fallbackPortraitForRecord(record) {
         const portraits = [
           "images/anni-aemeath-close.png",
           "images/anni-denia-close.png",
@@ -1488,6 +1488,10 @@
         ];
         const seed = String(record.creator || "").split("").reduce((total, char) => total + char.charCodeAt(0), 0);
         return portraits[seed % portraits.length];
+      }
+
+      function portraitForRecord(record) {
+        return record.profileImageUrl || fallbackPortraitForRecord(record);
       }
 
       function renderSelected(record) {
@@ -1503,8 +1507,8 @@
                 <h2><a class="kol-link" href="${youtubeHref(record)}" target="_blank" rel="noreferrer">${record.creator}</a></h2>
                 <p class="small">&#xAC00;&#xC7A5; &#xCD5C;&#xADFC; &#xB370;&#xC774;&#xD130; &#xAE30;&#xC900; &#xD575;&#xC2EC; &#xBC29;&#xC1A1; &#xC9C0;&#xD45C;&#xB97C; &#xD55C;&#xB208;&#xC5D0; &#xBCFC; &#xC218; &#xC788;&#xC5B4;.</p>
               </div>
-              <div class="selected-visual" aria-hidden="true">
-                <img src="${portraitForRecord(record)}" alt="" />
+              <div class="selected-visual">
+                <img src="${portraitForRecord(record)}" alt="${record.creator} 프로필 이미지" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${fallbackPortraitForRecord(record)}';" />
               </div>
             </div>
             <div class="search-top">

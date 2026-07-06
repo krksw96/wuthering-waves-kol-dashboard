@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const outputFile = path.join(root, "data", "kol-data.js");
+const profileImagesFile = path.join(root, "data", "profile-images.json");
 
 const env = {
   apiKey: process.env.KURO_API_KEY || "",
@@ -17,7 +18,8 @@ const env = {
 
 async function main() {
   const rows = await loadRows();
-  const records = normalizeRows(rows);
+  const profileImages = await loadProfileImages();
+  const records = applyProfileImages(normalizeRows(rows), profileImages);
   if (!records.length) {
     throw new Error("No KOL records were produced from the sheet response.");
   }
@@ -172,6 +174,7 @@ function normalizeRecord(row, index) {
   const rawStreams = number(get("streams", "Play", "\uD50C\uB808\uC774 \uD69F\uC218", "\uD50C\uB808\uC774", "\uBC29\uC1A1 \uD69F\uC218", "\uBC29\uC1A1 \uC218", "\uBC29\uC1A1\uC218"));
   const isStreamRecord = Boolean(latestDate || text(get("\uB370\uC774\uD130 \uB9C1\uD06C", "data link", "streamLink")) || text(get("\uC21C\uC704", "Rank")));
   const youtubeCell = get("youtube", "YouTube", "\uC720\uD29C\uBE0C");
+  const profileImageCell = get("profileImageUrl", "profileImage", "avatarUrl", "avatar", "\uD504\uB85C\uD544 \uC774\uBBF8\uC9C0", "\uD504\uB85C\uD544\uC0AC\uC9C4", "\uC774\uBBF8\uC9C0");
   return {
     creator,
     platform: text(get("platform", "\uD50C\uB7AB\uD3FC", "\u5E73\u53F0")) || "Feishu",
@@ -187,6 +190,7 @@ function normalizeRecord(row, index) {
     youtube: text(youtubeCell),
     youtubeUrl: link(youtubeCell),
     youtubeAvgViews: text(get("youtubeAvgViews", "\uC720\uD29C\uBE0C \uD3C9\uADE0 \uC870\uD68C\uC218", "\uD3C9\uADE0 \uC870\uD68C\uC218", "\uD3C9\uADE0\uC870\uD68C\uC218", "YouTube Average")),
+    profileImageUrl: url(profileImageCell),
   };
 }
 
@@ -211,11 +215,13 @@ function aggregateRecords(records) {
       current.youtube = record.youtube || current.youtube;
       current.youtubeUrl = record.youtubeUrl || current.youtubeUrl;
       current.youtubeAvgViews = record.youtubeAvgViews || current.youtubeAvgViews;
+      current.profileImageUrl = record.profileImageUrl || current.profileImageUrl;
     } else {
       current.notes ||= record.notes;
       current.youtube ||= record.youtube;
       current.youtubeUrl ||= record.youtubeUrl;
       current.youtubeAvgViews ||= record.youtubeAvgViews;
+      current.profileImageUrl ||= record.profileImageUrl;
     }
   }
 
@@ -227,6 +233,22 @@ function aggregateRecords(records) {
     }))
     .sort((a, b) => (b.viewershipTotal || 0) - (a.viewershipTotal || 0))
     .map((record, index) => ({ ...record, viewershipRank: index + 1 }));
+}
+
+async function loadProfileImages() {
+  try {
+    return JSON.parse(await fs.readFile(profileImagesFile, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return {};
+    throw error;
+  }
+}
+
+function applyProfileImages(records, profileImages) {
+  return records.map((record) => ({
+    ...record,
+    profileImageUrl: record.profileImageUrl || profileImages[record.creator] || "",
+  }));
 }
 
 function text(value) {
@@ -255,6 +277,13 @@ function link(value) {
     }
   }
   return "";
+}
+
+function url(value) {
+  const direct = link(value);
+  if (direct) return direct;
+  const raw = text(value);
+  return /^https?:\/\//i.test(raw) ? raw : "";
 }
 
 function number(value) {
