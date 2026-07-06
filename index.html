@@ -515,6 +515,110 @@
         white-space: nowrap;
       }
 
+      .partner-summary {
+        position: relative;
+        margin-top: 16px;
+        padding: 18px 20px 20px;
+        min-height: 174px;
+        overflow: hidden;
+        border: 1px solid rgba(166, 175, 239, 0.34);
+        border-radius: 24px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(244, 247, 255, 0.7)),
+          linear-gradient(90deg, rgba(239, 125, 177, 0.1), rgba(79, 167, 234, 0.11));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 16px 38px rgba(84, 98, 179, 0.08);
+      }
+
+      .partner-summary::before {
+        position: absolute;
+        inset: 10px;
+        border: 1px solid rgba(161, 175, 241, 0.16);
+        border-radius: 18px;
+        content: "";
+        pointer-events: none;
+      }
+
+      .partner-summary::after {
+        position: absolute;
+        right: -34px;
+        bottom: -70px;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(239, 125, 177, 0.18), transparent 70%);
+        content: "";
+        pointer-events: none;
+      }
+
+      .partner-summary-head,
+      .partner-grid {
+        position: relative;
+        z-index: 1;
+      }
+
+      .partner-summary-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .partner-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .partner-members {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 6px;
+        max-width: 620px;
+      }
+
+      .partner-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        border: 1px solid rgba(160, 178, 240, 0.28);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #5066aa;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .partner-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .partner-stat {
+        min-width: 0;
+        border: 1px solid rgba(184, 192, 241, 0.38);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.68);
+        padding: 13px 14px;
+        box-shadow: 0 10px 22px rgba(84, 98, 179, 0.07);
+      }
+
+      .partner-stat .label {
+        margin-bottom: 8px;
+      }
+
+      .partner-value {
+        overflow: hidden;
+        color: #17233b;
+        font-size: 22px;
+        font-weight: 900;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
       .content {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 390px;
@@ -948,6 +1052,10 @@
         .metric-grid {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
+
+        .partner-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
       }
 
       @media (max-width: 820px) {
@@ -989,6 +1097,8 @@
         .image-frame,
         .tile,
         .metric,
+        .partner-summary,
+        .partner-stat,
         .detail,
         .match,
         input[type="search"],
@@ -1007,6 +1117,18 @@
         }
 
         .metric-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .partner-summary-head {
+          flex-direction: column;
+        }
+
+        .partner-members {
+          justify-content: flex-start;
+        }
+
+        .partner-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -1083,6 +1205,7 @@
                 </div>
               </div>
               <section class="metric-grid" id="metrics"></section>
+              <section class="partner-summary" id="partner-summary" aria-label="장기 협업 KOL 합계"></section>
             </div>
             <section class="panel side-section selected-shell" id="selected-panel"></section>
           </section>
@@ -1158,6 +1281,13 @@
       let rankingKey = "viewership";
       let query = "";
       let selectedCreator = "";
+      const partnerKols = [
+        { label: "러끼", aliases: ["러끼"] },
+        { label: "마레플로스", aliases: ["마레 플로스", "마레플로스"] },
+        { label: "델로략국", aliases: ["델로략국"] },
+        { label: "코렛트", aliases: ["코렛트"] },
+        { label: "과로사", aliases: ["과로사1", "과로사"] },
+      ];
 
       const ranked = [...records].sort((a, b) => {
         if (a.viewershipRank && b.viewershipRank) return a.viewershipRank - b.viewershipRank;
@@ -1272,6 +1402,54 @@
             `,
           )
           .join("");
+      }
+
+      function findPartnerRecord(item) {
+        return records.find((record) => item.aliases.includes(record.creator));
+      }
+
+      function renderPartnerSummary() {
+        const partners = partnerKols.map((item) => ({ ...item, record: findPartnerRecord(item) }));
+        const totals = partners.reduce(
+          (sum, item) => {
+            const record = item.record || {};
+            sum.viewershipTotal += Number(record.viewershipTotal) || 0;
+            sum.streams += Number(record.streams) || 0;
+            sum.playHours += Number(record.playHours) || 0;
+            sum.maxViewers += Number(record.maxViewers) || 0;
+            sum.avgViewers += Number(record.avgViewers) || 0;
+            return sum;
+          },
+          { viewershipTotal: 0, streams: 0, playHours: 0, maxViewers: 0, avgViewers: 0 },
+        );
+        const stats = [
+          ["총 뷰어십", `${format(totals.viewershipTotal)} 뷰어십`],
+          ["총 플레이 횟수", `${format(totals.streams)}회`],
+          ["총 방송 시간", `${format(totals.playHours.toFixed(1))}시간`],
+          ["최고 시청자 합계", `${format(totals.maxViewers)}명`],
+          ["평균 시청자 합계", `${format(totals.avgViewers)}명`],
+        ];
+
+        document.getElementById("partner-summary").innerHTML = `
+          <div class="partner-summary-head">
+            <h2 class="partner-title">장기 협업 KOL 합계</h2>
+            <div class="partner-members">
+              ${partners.map((item) => `<span class="partner-chip">${escapeHtml(item.label)}</span>`).join("")}
+            </div>
+          </div>
+          <div class="partner-grid">
+            ${stats
+              .map(
+                ([label, value]) => `
+                  <article class="partner-stat">
+                    <div class="label">${escapeHtml(label)}</div>
+                    <div class="partner-value">${escapeHtml(value)}</div>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        `;
       }
 
       function renderTable() {
@@ -1440,6 +1618,7 @@
       document.getElementById("record-count").textContent = format(records.length);
 
       renderMetrics();
+      renderPartnerSummary();
       renderTable();
       renderMatches();
     </script>
