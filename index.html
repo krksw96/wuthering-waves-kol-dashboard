@@ -621,8 +621,22 @@
         transition: background 0.18s ease, transform 0.18s ease;
       }
 
+      .ranking-row {
+        cursor: pointer;
+      }
+
       tbody tr:hover {
         background: linear-gradient(90deg, rgba(235, 243, 255, 0.82), rgba(255, 236, 245, 0.72));
+      }
+
+      tbody tr.ranking-row.selected {
+        background: linear-gradient(90deg, rgba(229, 238, 255, 0.96), rgba(255, 230, 244, 0.92));
+        box-shadow: inset 4px 0 0 rgba(99, 119, 234, 0.78);
+      }
+
+      tbody tr.ranking-row:focus-visible {
+        outline: 3px solid rgba(101, 122, 233, 0.42);
+        outline-offset: -5px;
       }
 
       tbody tr:nth-child(-n + 3) {
@@ -659,6 +673,16 @@
       .kol-link:hover {
         color: #c64e8a;
         text-decoration: underline;
+      }
+
+      .table-kol {
+        display: inline;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        cursor: pointer;
+        padding: 0;
+        text-align: left;
       }
 
       aside {
@@ -1236,9 +1260,9 @@
         document.getElementById("ranking-body").innerHTML = rows
           .map(
             (record, index) => `
-              <tr>
+              <tr class="ranking-row ${selectedCreator === record.creator ? "selected" : ""}" data-ranking-name="${escapeHtml(record.creator)}" tabindex="0" aria-label="${escapeHtml(record.creator)} 선택">
                 <td class="rank">${index + 1}</td>
-                <td><a class="kol-link" href="${youtubeHref(record)}" target="_blank" rel="noreferrer">${record.creator}</a></td>
+                <td><button type="button" class="kol-link table-kol" data-ranking-name="${escapeHtml(record.creator)}">${escapeHtml(record.creator)}</button></td>
                 <td class="num"><strong>${format(record.viewershipTotal)}</strong></td>
                 <td class="num">${format(record.streams)}</td>
                 <td class="num">${record.playHours || 0}</td>
@@ -1255,8 +1279,8 @@
       function renderMatches() {
         const normalized = query.trim().toLowerCase();
         const matches = (normalized ? ranked.filter((record) => record.creator.toLowerCase().includes(normalized)) : ranked).slice(0, 3);
-        if (!matches.some((record) => record.creator === selectedCreator)) {
-          selectedCreator = matches[0]?.creator || ranked[0]?.creator || "";
+        if (!ranked.some((record) => record.creator === selectedCreator)) {
+          selectedCreator = ranked[0]?.creator || "";
         }
         const selected = ranked.find((record) => record.creator === selectedCreator) || matches[0] || ranked[0];
         document.getElementById("matches").innerHTML = matches.length
@@ -1272,6 +1296,13 @@
               .join("")
           : `<p class="small">검색 결과가 없습니다.</p>`;
         renderSelected(selected);
+      }
+
+      function selectCreator(name) {
+        if (!name || selectedCreator === name) return;
+        selectedCreator = name;
+        renderTable();
+        renderMatches();
       }
 
       function fallbackPortraitForRecord(record) {
@@ -1356,12 +1387,26 @@
         const sortControl = event.target.closest("[data-key]");
         const key = sortControl?.dataset?.key;
         if (key && labels[key]) updateSort(key);
+        const rankingControl = event.target.closest("[data-ranking-name]");
+        const rankingName = rankingControl?.dataset?.rankingName;
+        if (rankingName) {
+          selectCreator(rankingName);
+          return;
+        }
         const matchControl = event.target.closest("[data-name]");
         const name = matchControl?.dataset?.name;
         if (name) {
-          selectedCreator = name;
-          renderMatches();
+          selectCreator(name);
         }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const rankingControl = event.target.closest("[data-ranking-name]");
+        const rankingName = rankingControl?.dataset?.rankingName;
+        if (!rankingName) return;
+        event.preventDefault();
+        selectCreator(rankingName);
       });
 
       document.getElementById("query").addEventListener("input", (event) => {
