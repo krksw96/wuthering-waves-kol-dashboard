@@ -583,7 +583,7 @@
       }
 
       .table-scroll {
-        max-height: 760px;
+        min-height: 0;
         overflow: auto;
       }
 
@@ -712,15 +712,13 @@
         box-shadow: 0 0 0 4px rgba(120, 140, 232, 0.16);
       }
 
-      .matches,
-      .weekly-list {
+      .matches {
         display: grid;
         gap: 10px;
         margin-top: 16px;
       }
 
-      .match,
-      .weekly-item {
+      .match {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -743,8 +741,7 @@
       }
 
       .match.active,
-      .match:hover,
-      .weekly-item:hover {
+      .match:hover {
         transform: translateY(-2px);
         border-color: rgba(99, 119, 234, 0.52);
         background: linear-gradient(135deg, rgba(237, 244, 255, 0.92), rgba(255, 238, 247, 0.88));
@@ -856,19 +853,6 @@
         border: 1px solid rgba(162, 176, 241, 0.2);
       }
 
-      .cup-frame {
-        height: 290px;
-        background:
-          linear-gradient(180deg, rgba(255, 249, 255, 0.98), rgba(232, 239, 255, 0.9)),
-          radial-gradient(circle at 50% 12%, rgba(239, 125, 177, 0.18), transparent 16rem);
-      }
-
-      .cup-frame img {
-        padding: 0;
-        object-fit: cover;
-        object-position: center top;
-      }
-
       .page-art {
         position: fixed;
         bottom: 0;
@@ -893,20 +877,6 @@
 
       .art-right {
         right: -24px;
-      }
-
-      .weekly-item span:first-child {
-        overflow: hidden;
-        font-weight: 900;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .weekly-score {
-        flex-shrink: 0;
-        color: #ca5d90;
-        font-size: 12px;
-        font-weight: 900;
       }
 
       @media (max-width: 1200px) {
@@ -966,7 +936,6 @@
         .metric,
         .detail,
         .match,
-        .weekly-item,
         input[type="search"],
         .status,
         .note {
@@ -1008,18 +977,23 @@
       .ranking-panel {
         display: flex;
         flex-direction: column;
-        min-height: 100%;
+        height: var(--ranking-panel-height, 620px);
+        overflow: hidden;
       }
 
       .ranking-panel .table-scroll {
         flex: 1;
-        min-height: 1020px;
+        min-height: 0;
       }
 
       @media (max-width: 1200px) {
-        .ranking-panel .table-scroll {
-          min-height: auto;
+        .ranking-panel {
           height: auto;
+          overflow: visible;
+        }
+
+        .ranking-panel .table-scroll {
+          max-height: 760px;
         }
       }
 
@@ -1114,17 +1088,6 @@
 
             <section class="panel side-section selected-shell" id="selected-panel"></section>
 
-            <section class="panel">
-              <div class="image-frame cup-frame">
-                <img src="images/anni-denia-close.png" alt="" />
-              </div>
-              <div class="side-section">
-                <p class="kicker">Weekly Ranking</p>
-                <h2>주간 TOP 6</h2>
-                <p class="small" id="weekly-label">-</p>
-                <div class="weekly-list" id="weekly-list"></div>
-              </div>
-            </section>
           </aside>
         </section>
       </div>
@@ -1328,6 +1291,7 @@
       function renderSelected(record) {
         if (!record) {
           document.getElementById("selected-panel").innerHTML = "";
+          syncRankingHeight();
           return;
         }
         document.getElementById("selected-panel").innerHTML = `
@@ -1357,21 +1321,21 @@
             <p class="note">${record.notes || "&#xCD5C;&#xADFC; &#xC5C5;&#xB85C;&#xB4DC;&#xC640; &#xD50C;&#xB808;&#xC774; &#xC911;&#xC2EC; &#xBC29;&#xC1A1; &#xB0B4;&#xC6A9; &#xC694;&#xC57D;"}</p>
           </div>
         `;
+        syncRankingHeight();
       }
 
-      function renderWeekly() {
-        document.getElementById("weekly-label").textContent = weekly.label;
-        document.getElementById("weekly-list").innerHTML = weekly.records
-          .slice(0, 6)
-          .map(
-            (record, index) => `
-              <a class="weekly-item" href="${youtubeHref(record)}" target="_blank" rel="noreferrer">
-                <span>${index + 1}. ${record.creator}</span>
-                <span class="weekly-score">${format(record.viewershipTotal)}</span>
-              </a>
-            `,
-          )
-          .join("");
+      function syncRankingHeight() {
+        const rankingPanel = document.querySelector(".ranking-panel");
+        const selectedPanel = document.getElementById("selected-panel");
+        if (!rankingPanel || !selectedPanel) return;
+        if (window.matchMedia("(max-width: 1200px)").matches) {
+          rankingPanel.style.removeProperty("--ranking-panel-height");
+          return;
+        }
+        const height = Math.ceil(selectedPanel.getBoundingClientRect().height);
+        if (height > 0) {
+          rankingPanel.style.setProperty("--ranking-panel-height", `${height}px`);
+        }
       }
 
       function updateSort(key) {
@@ -1405,6 +1369,8 @@
         renderMatches();
       });
 
+      window.addEventListener("resize", syncRankingHeight);
+
       document.getElementById("summary-records").textContent = format(records.length);
       document.getElementById("summary-week").textContent = weekly.label;
       document.getElementById("record-count").textContent = format(records.length);
@@ -1413,7 +1379,6 @@
       renderFilters();
       renderTable();
       renderMatches();
-      renderWeekly();
     </script>
   </body>
 </html>
