@@ -523,8 +523,16 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
+        min-height: 112px;
+        overflow: hidden;
         border-bottom: 1px solid rgba(225, 211, 255, 0.7);
         background: linear-gradient(135deg, rgba(255, 247, 252, 0.72), rgba(239, 245, 255, 0.74));
+      }
+
+      .table-title {
+        position: relative;
+        z-index: 1;
+        min-width: 0;
       }
 
       .table-head h2,
@@ -540,14 +548,6 @@
         font-size: 14px;
       }
 
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 8px;
-      }
-
-      .filter-btn,
       .head-btn {
         cursor: pointer;
         border: 1px solid rgba(164, 173, 243, 0.4);
@@ -559,15 +559,10 @@
         transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, background 0.18s ease;
       }
 
-      .filter-btn {
-        padding: 9px 13px;
-      }
-
       .head-btn {
         padding: 6px 10px;
       }
 
-      .filter-btn:hover,
       .head-btn:hover {
         transform: translateY(-1px);
         border-color: rgba(101, 122, 233, 0.8);
@@ -575,11 +570,31 @@
         box-shadow: 0 10px 20px rgba(95, 108, 212, 0.12);
       }
 
-      .filter-btn.active,
       .head-btn.active {
         border-color: rgba(101, 122, 233, 0.96);
         background: linear-gradient(135deg, rgba(94, 111, 229, 0.96), rgba(239, 125, 177, 0.94));
         color: #fff;
+      }
+
+      .ranking-art {
+        position: absolute;
+        right: 18px;
+        bottom: -22px;
+        z-index: 0;
+        width: min(440px, 48%);
+        height: 134px;
+        overflow: hidden;
+        border-radius: 22px 22px 0 0;
+        opacity: 0.96;
+        pointer-events: none;
+        filter: saturate(1.05) drop-shadow(0 18px 26px rgba(79, 90, 173, 0.13));
+      }
+
+      .ranking-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
       }
 
       .table-scroll {
@@ -938,10 +953,14 @@
         .table-head {
           align-items: flex-start;
           flex-direction: column;
+          min-height: 170px;
         }
 
-        .filters {
-          justify-content: flex-start;
+        .ranking-art {
+          right: 12px;
+          bottom: -18px;
+          width: min(520px, calc(100% - 24px));
+          height: 92px;
         }
 
         h1 {
@@ -1068,11 +1087,13 @@
         <section class="content">
           <section class="panel ranking-panel">
             <div class="table-head">
-              <div>
+              <div class="table-title">
                 <h2>&#xB370;&#xC774;&#xD130; &#xB7AD;&#xD0B9;</h2>
                 <p class="small">&#xC120;&#xD0DD; &#xAE30;&#xC900;: <strong id="active-label">&#xBDF0;&#xC5B4;&#xC2ED;</strong> | <span id="record-count">0</span>&#xAC1C;</p>
               </div>
-              <div class="filters" id="filters"></div>
+              <div class="ranking-art" aria-hidden="true">
+                <img src="images/ranking-header-art.png" alt="" loading="lazy" decoding="async" />
+              </div>
             </div>
             <div class="table-scroll">
               <table>
@@ -1129,7 +1150,6 @@
         youtube: "유튜브",
         latest: "최근 방송",
       };
-      const filterKeys = ["viewership", "streams", "playHours", "maxViewers", "avgViewers", "youtube", "latest"];
       let rankingKey = "viewership";
       let query = "";
       let selectedCreator = "";
@@ -1246,12 +1266,6 @@
               </article>
             `,
           )
-          .join("");
-      }
-
-      function renderFilters() {
-        document.getElementById("filters").innerHTML = filterKeys
-          .map((key) => `<button class="filter-btn ${rankingKey === key ? "active" : ""}" data-key="${key}">${labels[key]}</button>`)
           .join("");
       }
 
@@ -1373,7 +1387,6 @@
         rankingKey = key;
         document.getElementById("summary-sort").textContent = labels[rankingKey];
         document.getElementById("active-label").textContent = labels[rankingKey];
-        renderFilters();
         document.querySelectorAll(".head-btn").forEach((button) => {
           const active = button.dataset.key === rankingKey;
           button.classList.toggle("active", active);
@@ -1421,7 +1434,6 @@
       document.getElementById("record-count").textContent = format(records.length);
 
       renderMetrics();
-      renderFilters();
       renderTable();
       renderMatches();
     </script>
