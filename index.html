@@ -579,6 +579,7 @@
       }
 
       .partner-chip {
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
         min-height: 28px;
@@ -589,6 +590,20 @@
         padding: 5px 10px;
         font-size: 12px;
         font-weight: 900;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease, background 0.18s ease;
+      }
+
+      .partner-chip:hover {
+        transform: translateY(-1px);
+        border-color: rgba(101, 122, 233, 0.7);
+        box-shadow: 0 10px 20px rgba(95, 108, 212, 0.1);
+      }
+
+      .partner-chip.active {
+        border-color: rgba(101, 122, 233, 0.92);
+        background: linear-gradient(135deg, rgba(94, 111, 229, 0.96), rgba(239, 125, 177, 0.94));
+        color: #fff;
+        box-shadow: 0 10px 22px rgba(110, 95, 222, 0.18);
       }
 
       .partner-grid {
@@ -1281,12 +1296,13 @@
       let rankingKey = "viewership";
       let query = "";
       let selectedCreator = "";
+      let partnerView = "total";
       const partnerKols = [
-        { label: "러끼", aliases: ["러끼"] },
-        { label: "마레플로스", aliases: ["마레 플로스", "마레플로스"] },
-        { label: "델로략국", aliases: ["델로략국"] },
-        { label: "코렛트", aliases: ["코렛트"] },
-        { label: "과로사", aliases: ["과로사1", "과로사"] },
+        { id: "lakki", label: "러끼", aliases: ["러끼"] },
+        { id: "mareflos", label: "마레플로스", aliases: ["마레 플로스", "마레플로스"] },
+        { id: "delloryakguk", label: "델로략국", aliases: ["델로략국"] },
+        { id: "collet", label: "코렛트", aliases: ["코렛트"] },
+        { id: "gwarosa", label: "과로사", aliases: ["과로사1", "과로사"] },
       ];
 
       const ranked = [...records].sort((a, b) => {
@@ -1408,6 +1424,16 @@
         return records.find((record) => item.aliases.includes(record.creator));
       }
 
+      function makePartnerStats(source, isTotal) {
+        return [
+          ["총 뷰어십", `${format(source.viewershipTotal)} 뷰어십`],
+          ["총 플레이 횟수", `${format(source.streams)}회`],
+          ["총 방송 시간", `${format(Number(source.playHours || 0).toFixed(1))}시간`],
+          [isTotal ? "최고 시청자 합계" : "최고 시청자", `${format(source.maxViewers)}명`],
+          [isTotal ? "평균 시청자 합계" : "평균 시청자", `${format(source.avgViewers)}명`],
+        ];
+      }
+
       function renderPartnerSummary() {
         const partners = partnerKols.map((item) => ({ ...item, record: findPartnerRecord(item) }));
         const totals = partners.reduce(
@@ -1422,19 +1448,22 @@
           },
           { viewershipTotal: 0, streams: 0, playHours: 0, maxViewers: 0, avgViewers: 0 },
         );
-        const stats = [
-          ["총 뷰어십", `${format(totals.viewershipTotal)} 뷰어십`],
-          ["총 플레이 횟수", `${format(totals.streams)}회`],
-          ["총 방송 시간", `${format(totals.playHours.toFixed(1))}시간`],
-          ["최고 시청자 합계", `${format(totals.maxViewers)}명`],
-          ["평균 시청자 합계", `${format(totals.avgViewers)}명`],
-        ];
+        const activePartner = partners.find((item) => item.id === partnerView && item.record);
+        const activeSource = activePartner?.record || totals;
+        const isTotal = !activePartner;
+        const stats = makePartnerStats(activeSource, isTotal);
+        const controls = [{ id: "total", label: "합계" }, ...partners];
 
         document.getElementById("partner-summary").innerHTML = `
           <div class="partner-summary-head">
-            <h2 class="partner-title">장기 협업 KOL 합계</h2>
+            <h2 class="partner-title">${escapeHtml(isTotal ? "장기 협업 KOL 합계" : `${activePartner.label} 총 데이터`)}</h2>
             <div class="partner-members">
-              ${partners.map((item) => `<span class="partner-chip">${escapeHtml(item.label)}</span>`).join("")}
+              ${controls
+                .map((item) => {
+                  const active = item.id === (isTotal ? "total" : activePartner.id);
+                  return `<button class="partner-chip ${active ? "active" : ""}" type="button" data-partner-view="${escapeHtml(item.id)}" aria-pressed="${active ? "true" : "false"}">${escapeHtml(item.label)}</button>`;
+                })
+                .join("")}
             </div>
           </div>
           <div class="partner-grid">
@@ -1579,6 +1608,13 @@
       }
 
       document.addEventListener("click", (event) => {
+        const partnerControl = event.target.closest("[data-partner-view]");
+        const nextPartnerView = partnerControl?.dataset?.partnerView;
+        if (nextPartnerView) {
+          partnerView = nextPartnerView;
+          renderPartnerSummary();
+          return;
+        }
         const sortControl = event.target.closest("[data-key]");
         const key = sortControl?.dataset?.key;
         if (key && labels[key]) updateSort(key);
