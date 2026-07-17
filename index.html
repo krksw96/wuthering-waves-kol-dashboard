@@ -690,8 +690,14 @@
         font-weight: 900;
       }
 
+      .date-range-field {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
       .date-select {
-        min-width: 148px;
+        min-width: 138px;
         height: 38px;
         border: 1px solid rgba(164, 173, 243, 0.58);
         border-radius: 999px;
@@ -1283,9 +1289,15 @@
                 </div>
               </div>
               <section class="metric-grid" id="metrics"></section>
-              <div class="date-filter-strip" aria-label="장기 협업 데이터 날짜 선택">
-                <label class="date-select-label" for="partner-date-filter">데이터 기준</label>
-                <select class="date-select date-filter-control" id="partner-date-filter"></select>
+              <div class="date-filter-strip" aria-label="데이터 기간 선택">
+                <div class="date-range-field">
+                  <label class="date-select-label" for="partner-date-start">시작일</label>
+                  <select class="date-select date-filter-control" id="partner-date-start" data-date-bound="start"></select>
+                </div>
+                <div class="date-range-field">
+                  <label class="date-select-label" for="partner-date-end">종료일</label>
+                  <select class="date-select date-filter-control" id="partner-date-end" data-date-bound="end"></select>
+                </div>
               </div>
               <section class="partner-summary" id="partner-summary" aria-label="장기 협업 KOL 합계"></section>
             </div>
@@ -1299,10 +1311,6 @@
               <div class="table-title">
                 <h2>&#xB370;&#xC774;&#xD130; &#xB7AD;&#xD0B9;</h2>
                 <p class="small">&#xC120;&#xD0DD; &#xAE30;&#xC900;: <strong id="active-label">&#xBDF0;&#xC5B4;&#xC2ED;</strong> | <span id="record-count">0</span>&#xAC1C;</p>
-              </div>
-              <div class="table-tools" aria-label="랭킹 데이터 날짜 선택">
-                <label class="date-select-label" for="ranking-date-filter">데이터 기준</label>
-                <select class="date-select date-filter-control" id="ranking-date-filter"></select>
               </div>
               <div class="ranking-art" aria-hidden="true">
                 <img src="images/ranking-header-art.png" alt="" loading="lazy" decoding="async" />
@@ -1369,7 +1377,7 @@
       let query = "";
       let selectedCreator = "";
       let partnerView = "total";
-      let dateFilter = "all";
+      let dateFilter = { start: "all", end: "all" };
       const partnerKols = [
         { id: "lakki", label: "러끼", aliases: ["러끼"] },
         { id: "mareflos", label: "마레플로스", aliases: ["마레 플로스", "마레플로스"] },
@@ -1446,6 +1454,35 @@
         return [...new Set(dateSource.map(dateLabelFor).filter(Boolean))].sort((a, b) => dateSortValue(b) - dateSortValue(a));
       }
 
+      function isWholeDateRange() {
+        return dateFilter.start === "all" && dateFilter.end === "all";
+      }
+
+      function activeDateBounds() {
+        const dates = dateOptions();
+        if (!dates.length || isWholeDateRange()) return null;
+        const newest = dates[0];
+        const oldest = dates[dates.length - 1];
+        const startLabel = dateFilter.start === "all" ? oldest : dateFilter.start;
+        const endLabel = dateFilter.end === "all" ? newest : dateFilter.end;
+        const startValue = dateSortValue(startLabel);
+        const endValue = dateSortValue(endLabel);
+        const startIsEarlier = startValue <= endValue;
+        return {
+          min: Math.min(startValue, endValue),
+          max: Math.max(startValue, endValue),
+          startLabel: startIsEarlier ? startLabel : endLabel,
+          endLabel: startIsEarlier ? endLabel : startLabel,
+        };
+      }
+
+      function recordInDateRange(record) {
+        const bounds = activeDateBounds();
+        if (!bounds) return true;
+        const value = dateSortValue(dateLabelFor(record));
+        return value >= bounds.min && value <= bounds.max;
+      }
+
       function latestRecord(current, next) {
         return dateSortValue(dateLabelFor(next)) >= dateSortValue(dateLabelFor(current)) ? next : current;
       }
@@ -1481,8 +1518,8 @@
       }
 
       function currentRecords() {
-        if (dateFilter === "all") return ranked;
-        return aggregateForDisplay(dateSource.filter((record) => dateLabelFor(record) === dateFilter));
+        if (isWholeDateRange()) return ranked;
+        return aggregateForDisplay(dateSource.filter(recordInDateRange));
       }
 
       function currentRanked() {
@@ -1490,7 +1527,9 @@
       }
 
       function currentPeriodLabel() {
-        return dateFilter === "all" ? "전체 기간" : dateFilter;
+        const bounds = activeDateBounds();
+        if (!bounds) return "전체 기간";
+        return bounds.startLabel === bounds.endLabel ? bounds.startLabel : `${bounds.startLabel} - ${bounds.endLabel}`;
       }
 
       function getWeeklyRanking(source, fallback) {
@@ -1530,18 +1569,21 @@
 
       function renderDateFilters() {
         const options = [{ value: "all", label: "전체 기간" }, ...dateOptions().map((date) => ({ value: date, label: date }))];
-        const html = options
-          .map((option) => `<option value="${escapeHtml(option.value)}"${option.value === dateFilter ? " selected" : ""}>${escapeHtml(option.label)}</option>`)
-          .join("");
+        const optionHtml = (bound) =>
+          options
+            .map((option) => `<option value="${escapeHtml(option.value)}"${option.value === dateFilter[bound] ? " selected" : ""}>${escapeHtml(option.label)}</option>`)
+            .join("");
         document.querySelectorAll(".date-filter-control").forEach((control) => {
-          control.innerHTML = html;
-          control.value = dateFilter;
+          const bound = control.dataset.dateBound || "start";
+          control.innerHTML = optionHtml(bound);
+          control.value = dateFilter[bound] || "all";
         });
       }
 
       function syncDateFilters() {
         document.querySelectorAll(".date-filter-control").forEach((control) => {
-          control.value = dateFilter;
+          const bound = control.dataset.dateBound || "start";
+          control.value = dateFilter[bound] || "all";
         });
       }
 
@@ -1772,8 +1814,8 @@
         renderTable();
       }
 
-      function updateDateFilter(value) {
-        dateFilter = value || "all";
+      function updateDateFilter(bound, value) {
+        dateFilter = { ...dateFilter, [bound]: value || "all" };
         syncDateFilters();
         const scoped = currentRanked();
         ensureSelectedCreator(scoped);
@@ -1809,7 +1851,7 @@
 
       document.querySelectorAll(".date-filter-control").forEach((control) => {
         control.addEventListener("change", (event) => {
-          updateDateFilter(event.target.value);
+          updateDateFilter(event.target.dataset.dateBound || "start", event.target.value);
         });
       });
 
