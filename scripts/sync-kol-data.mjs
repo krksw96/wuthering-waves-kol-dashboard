@@ -19,13 +19,18 @@ const env = {
 async function main() {
   const rows = await loadRows();
   const profileImages = await loadProfileImages();
-  const records = applyProfileImages(normalizeRows(rows), profileImages);
+  const dailyRecords = applyProfileImages(normalizeRows(rows), profileImages);
+  const records = applyProfileImages(aggregateRecords(dailyRecords), profileImages);
   if (!records.length) {
     throw new Error("No KOL records were produced from the sheet response.");
   }
   await fs.mkdir(path.dirname(outputFile), { recursive: true });
-  await fs.writeFile(outputFile, `window.KOL_RECORDS = ${JSON.stringify(records)};\n`, "utf8");
-  console.log(`Wrote ${records.length} KOL records to data/kol-data.js`);
+  await fs.writeFile(
+    outputFile,
+    `window.KOL_RECORDS = ${JSON.stringify(records)};\nwindow.KOL_DAILY_RECORDS = ${JSON.stringify(dailyRecords)};\n`,
+    "utf8",
+  );
+  console.log(`Wrote ${records.length} KOL records and ${dailyRecords.length} daily rows to data/kol-data.js`);
 }
 
 async function loadRows() {
@@ -148,10 +153,9 @@ function parseCsv(csv) {
 }
 
 function normalizeRows(rows) {
-  const records = rows
+  return rows
     .map((row, index) => normalizeRecord(row, index))
     .filter((record) => record.creator);
-  return aggregateRecords(records);
 }
 
 function normalizeRecord(row, index) {
