@@ -8,6 +8,11 @@ on:
         required: false
         type: boolean
         default: false
+      inspect_xlsx:
+        description: Inspect a temporary read-only Feishu XLSX export
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: "0 */6 * * *"
 
@@ -25,6 +30,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Run Node tests
+        run: npm test
+
+      - name: Run Python tests
+        run: python -m unittest discover -s test -p 'test_*.py' -v
+
+      - name: Inspect Feishu XLSX export
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.inspect_xlsx }}
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
+          FEISHU_SHEET_ID: 8KTfQn
+          FEISHU_API_BASE_URL: ${{ secrets.KURO_BASE_URL || 'https://ai-gateway.kurogames.com' }}
+          FEISHU_API_KEY: ${{ secrets.FEISHU_API_KEY }}
+          KURO_API_KEY: ${{ secrets.KURO_API_KEY }}
+          KOL_DATA_API_KEY: ${{ secrets.KOL_DATA_API_KEY }}
+        run: python scripts/inspect-feishu-export.py
 
       - name: Sync sheet data
         env:
