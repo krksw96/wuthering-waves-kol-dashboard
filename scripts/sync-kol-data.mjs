@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { logFeishuSheetInspection } from "./feishu-sheet-inspection.mjs";
+
 const root = process.cwd();
 const outputFile = path.join(root, "data", "kol-data.js");
 const profileImagesFile = path.join(root, "data", "profile-images.json");
@@ -14,6 +16,7 @@ const env = {
   spreadsheetToken: process.env.FEISHU_SPREADSHEET_TOKEN || "V9C1sSLU4hOweEtvDRdcBnENnMh",
   sheetId: process.env.FEISHU_SHEET_ID || "8KTfQn",
   range: process.env.FEISHU_RANGE || "A:Z",
+  inspectFeishu: process.env.FEISHU_INSPECT === "1",
 };
 
 async function main() {
@@ -80,7 +83,9 @@ async function loadRowsFromFeishuOpenApi() {
   if (!valuesResponse.ok || valuesPayload.code !== 0) {
     throw new Error(`Feishu values request failed: ${JSON.stringify(redact(valuesPayload)).slice(0, 240)}`);
   }
-  return rowsFromJson(valuesPayload);
+  const values = valuesFromJson(valuesPayload);
+  logFeishuSheetInspection(values, { enabled: env.inspectFeishu });
+  return tableToObjects(values);
 }
 
 async function authedFetch(url) {
@@ -105,6 +110,13 @@ function rowsFromJson(payload) {
   if (Array.isArray(payload?.data?.values)) return tableToObjects(payload.data.values);
   if (Array.isArray(payload?.data?.valueRange?.values)) return tableToObjects(payload.data.valueRange.values);
   throw new Error("Unsupported sheet JSON response shape.");
+}
+
+function valuesFromJson(payload) {
+  if (Array.isArray(payload.values)) return payload.values;
+  if (Array.isArray(payload?.data?.values)) return payload.data.values;
+  if (Array.isArray(payload?.data?.valueRange?.values)) return payload.data.valueRange.values;
+  throw new Error("Unsupported Feishu values response shape.");
 }
 
 function tableToObjects(values) {

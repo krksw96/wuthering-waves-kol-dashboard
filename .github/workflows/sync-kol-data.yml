@@ -2,6 +2,12 @@ name: Sync KOL data
 
 on:
   workflow_dispatch:
+    inputs:
+      inspect_sheet:
+        description: Log a read-only Feishu sheet inspection
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: "0 */6 * * *"
 
@@ -31,6 +37,7 @@ jobs:
           FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
           FEISHU_SHEET_ID: 8KTfQn
           FEISHU_RANGE: ${{ vars.FEISHU_RANGE || 'A:Z' }}
+          FEISHU_INSPECT: ${{ github.event_name == 'workflow_dispatch' && inputs.inspect_sheet && '1' || '0' }}
         run: npm run sync
 
       - name: Commit updated data
