@@ -44,7 +44,7 @@ jobs:
           FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
           FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
           FEISHU_SHEET_ID: 8KTfQn
-          FEISHU_API_BASE_URL: ${{ secrets.KURO_BASE_URL || 'https://ai-gateway.kurogames.com' }}
+          FEISHU_API_BASE_URL: https://ai-gateway.kurogames.com
           FEISHU_API_KEY: ${{ secrets.FEISHU_API_KEY }}
           KURO_API_KEY: ${{ secrets.KURO_API_KEY }}
           KOL_DATA_API_KEY: ${{ secrets.KOL_DATA_API_KEY }}
