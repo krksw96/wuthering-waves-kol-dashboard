@@ -2,6 +2,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+import urllib.error
 import zipfile
 from pathlib import Path
 
@@ -52,6 +53,36 @@ class InspectFeishuExportTests(unittest.TestCase):
         self.assertEqual(inspection["missing_youtube_hyperlink_creators"], ["Beta"])
         self.assertEqual(inspection["missing_youtube_hyperlink_count"], 1)
         self.assertNotIn("https://example.com/private", json.dumps(inspection, ensure_ascii=False))
+
+    def test_request_bytes_retries_transient_network_failure(self):
+        inspector = load_inspector_module()
+        attempts = []
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def read(self):
+                return b"ok"
+
+        def opener(_request, timeout):
+            attempts.append(timeout)
+            if len(attempts) == 1:
+                raise urllib.error.URLError(TimeoutError("timed out"))
+            return Response()
+
+        result = inspector._request_bytes(
+            opener,
+            "https://example.test/data",
+            attempts=2,
+            retry_delay_seconds=0,
+        )
+
+        self.assertEqual(result, b"ok")
+        self.assertEqual(len(attempts), 2)
 
     @staticmethod
     def _write_fixture(path):

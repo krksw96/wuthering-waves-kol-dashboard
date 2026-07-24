@@ -114,20 +114,38 @@ def _request_json(opener, url, method="GET", headers=None, payload=None):
     return result
 
 
-def _request_bytes(opener, url, method="GET", headers=None, payload=None):
+def _request_bytes(
+    opener,
+    url,
+    method="GET",
+    headers=None,
+    payload=None,
+    attempts=3,
+    retry_delay_seconds=1,
+    sleep=time.sleep,
+):
     request_headers = dict(headers or {})
     data = None
     if payload is not None:
         data = json.dumps(payload, separators=(",", ":")).encode("utf-8")
         request_headers.setdefault("Content-Type", "application/json; charset=utf-8")
-    request = urllib.request.Request(url, data=data, headers=request_headers, method=method)
-    try:
-        with opener(request, timeout=60) as response:
-            return response.read()
-    except urllib.error.HTTPError as error:
-        raise RuntimeError(f"Feishu API HTTP error: {error.code}") from error
-    except urllib.error.URLError as error:
-        raise RuntimeError("Feishu API network request failed.") from error
+
+    for attempt in range(attempts):
+        request = urllib.request.Request(url, data=data, headers=request_headers, method=method)
+        try:
+            with opener(request, timeout=60) as response:
+                return response.read()
+        except urllib.error.HTTPError as error:
+            transient = error.code == 429 or 500 <= error.code < 600
+            if not transient or attempt + 1 >= attempts:
+                raise RuntimeError(f"Feishu API HTTP error: {error.code}") from error
+        except (urllib.error.URLError, TimeoutError) as error:
+            if attempt + 1 >= attempts:
+                raise RuntimeError("Feishu API network request failed.") from error
+
+        sleep(retry_delay_seconds * (2**attempt))
+
+    raise RuntimeError("Feishu API request failed after retries.")
 
 
 def _gateway_headers(config):
