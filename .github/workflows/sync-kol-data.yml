@@ -13,6 +13,20 @@ on:
         required: false
         type: boolean
         default: false
+      daily_sync:
+        description: Run the Softcon and YouTube to Feishu daily pipeline
+        required: false
+        type: boolean
+        default: false
+      daily_target_date:
+        description: Optional KST date for daily sync (YYYY-MM-DD)
+        required: false
+        type: string
+      daily_write:
+        description: Allow the daily pipeline to insert and write 20 rows
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: "0 */6 * * *"
 
@@ -29,13 +43,37 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
 
       - name: Run Node tests
         run: npm test
 
       - name: Run Python tests
         run: python -m unittest discover -s test -p 'test_*.py' -v
+
+      - name: Run Feishu daily pipeline
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.daily_sync }}
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
+          FEISHU_SHEET_ID: 8KTfQn
+          FEISHU_API_BASE_URL: https://open.feishu.cn
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          TARGET_DATE: ${{ inputs.daily_target_date }}
+          WRITE_REQUESTED: ${{ inputs.daily_write }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ -n "$TARGET_DATE" ]]; then
+            args+=("--date=$TARGET_DATE")
+          fi
+          if [[ "$WRITE_REQUESTED" == "true" ]]; then
+            export FEISHU_WRITE_ENABLED=true
+            args+=("--write")
+          fi
+          node scripts/sync-feishu-daily.mjs "${args[@]}"
 
       - name: Inspect Feishu XLSX export
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.inspect_xlsx }}
