@@ -12,6 +12,7 @@ export function createYouTubeClient({
 
   async function resolveChannel(creatorName) {
     const mapping = normalizeMapping(channelMap[creatorName]);
+    let preserveMappedUrl = false;
     if (mapping?.channelId) {
       return {
         channelId: mapping.channelId,
@@ -21,14 +22,20 @@ export function createYouTubeClient({
       };
     }
     if (mapping?.url) {
-      const query = channelLookupQuery(mapping);
-      if (query.id) {
-        return {
-          channelId: query.id,
-          url: mapping.url,
-          title: creatorName,
-          source: "mapping",
-        };
+      try {
+        const query = channelLookupQuery(mapping);
+        if (query.id) {
+          return {
+            channelId: query.id,
+            url: mapping.url,
+            title: creatorName,
+            source: "mapping",
+          };
+        }
+      } catch (error) {
+        const path = new URL(mapping.url).pathname;
+        if (!path.startsWith("/c/")) throw error;
+        preserveMappedUrl = true;
       }
     }
 
@@ -52,9 +59,9 @@ export function createYouTubeClient({
     const channelId = String(match.id.channelId);
     return {
       channelId,
-      url: `https://www.youtube.com/channel/${channelId}`,
+      url: preserveMappedUrl ? mapping.url : `https://www.youtube.com/channel/${channelId}`,
       title: String(match.snippet.channelTitle),
-      source: "search-exact",
+      source: preserveMappedUrl ? "mapping-custom-search-exact" : "search-exact",
     };
   }
 

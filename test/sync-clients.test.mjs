@@ -233,3 +233,21 @@ test("YouTube client resolves an unmapped creator only from an exact channel-tit
     source: "search-exact",
   });
 });
+
+test("YouTube client resolves a legacy custom /c/ mapping by exact-title search", async () => {
+  const client = createYouTubeClient({
+    apiKey: "yt-key",
+    channelMap: { "마레 플로스": { url: "https://www.youtube.com/c/MareFlosCh" } },
+    retryDelayMs: 0,
+    fetchImpl: async () => jsonResponse({ items: [
+      { id: { channelId: "mare-channel" }, snippet: { channelTitle: "마레 플로스" } },
+    ] }),
+  });
+
+  assert.deepEqual(await client.resolveChannel("마레 플로스"), {
+    channelId: "mare-channel",
+    url: "https://www.youtube.com/c/MareFlosCh",
+    title: "마레 플로스",
+    source: "mapping-custom-search-exact",
+  });
+});
