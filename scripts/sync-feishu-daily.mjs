@@ -2,6 +2,7 @@
 
 import { readFile } from "node:fs/promises";
 
+import { writeFeishuBackup } from "./feishu-backup.mjs";
 import { createFeishuClient } from "./feishu-client.mjs";
 import { createSoftconClient } from "./softcon-client.mjs";
 import { resolveRunOptions, runDailySync } from "./sync-feishu-daily-lib.mjs";
@@ -23,6 +24,7 @@ try {
   const youtubeApiKey = requiredEnvironment("YOUTUBE_API_KEY");
   const spreadsheetToken = process.env.FEISHU_SPREADSHEET_TOKEN || "V9C1sSLU4hOweEtvDRdcBnENnMh";
   const sheetId = process.env.FEISHU_SHEET_ID || "8KTfQn";
+  const backupPath = process.env.FEISHU_BACKUP_PATH || `feishu-backup-${options.targetDate}.json`;
   const channelMap = JSON.parse(await readFile(
     new URL("../data/youtube-channels.json", import.meta.url),
     "utf8",
@@ -43,6 +45,9 @@ try {
     sheetId,
     targetDate: options.targetDate,
     write: options.write,
+    onBackup: options.write
+      ? (payload) => writeFeishuBackup(backupPath, { ...payload, spreadsheetToken })
+      : undefined,
   });
 
   const summary = {

@@ -28,6 +28,7 @@ export async function runDailySync({
   sheetId,
   targetDate,
   write = false,
+  onBackup,
 }) {
   if (!feishu || !softcon || !youtube) throw new Error("Feishu, Softcon, and YouTube clients are required.");
   if (!sheetId || !targetDate) throw new Error("sheetId and targetDate are required.");
@@ -36,6 +37,9 @@ export async function runDailySync({
   const plan = planDailyBlock(matrix, targetDate, sheetId);
   if (plan.action === "noop") {
     return { ...plan, targetDate, rowCount: 20 };
+  }
+  if (write && typeof onBackup !== "function") {
+    throw new Error("Feishu write mode requires a completed backup callback before insertion.");
   }
 
   const ranking = await softcon.fetchDailyRanking(targetDate);
@@ -70,6 +74,11 @@ export async function runDailySync({
     };
   }
 
+  const currentMatrix = await feishu.readMatrix(`${sheetId}!A:K`);
+  if (JSON.stringify(currentMatrix) !== JSON.stringify(matrix)) {
+    throw new Error("Feishu sheet changed during data collection; refusing to insert rows.");
+  }
+  await onBackup({ matrix: currentMatrix, plan, sheetId, targetDate });
   await feishu.insertRows(plan.dimensionRange, "AFTER");
   try {
     await feishu.writeRange(plan.writeRange, rows);

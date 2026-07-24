@@ -80,7 +80,7 @@ test("daily sync inserts with AFTER style inheritance and verifies all 220 writt
   const feishu = {
     readMatrix: async () => {
       readCount += 1;
-      if (readCount === 1) return existingSheet();
+      if (readCount <= 2) return existingSheet();
       return writtenRows.map((row) => row.map((cell) => (
         cell && typeof cell === "object" ? cell.text : cell
       )));
@@ -116,19 +116,25 @@ test("daily sync inserts with AFTER style inheritance and verifies all 220 writt
     sheetId: "8KTfQn",
     targetDate: "2026-07-24",
     write: true,
+    onBackup: async ({ matrix, targetDate }) => {
+      calls.push({ type: "backup", matrix, targetDate });
+    },
   });
 
   assert.equal(result.action, "written");
   assert.equal(result.verifiedCells, 220);
-  assert.deepEqual(calls.map((call) => call.type), ["insert", "write"]);
-  assert.equal(calls[0].inheritStyle, "AFTER");
-  assert.deepEqual(calls[0].dimension, {
+  assert.equal(readCount, 3);
+  assert.deepEqual(calls.map((call) => call.type), ["backup", "insert", "write"]);
+  assert.equal(calls[0].targetDate, "2026-07-24");
+  assert.deepEqual(calls[0].matrix, existingSheet());
+  assert.equal(calls[1].inheritStyle, "AFTER");
+  assert.deepEqual(calls[1].dimension, {
     sheetId: "8KTfQn",
     majorDimension: "ROWS",
     startIndex: 1,
     endIndex: 21,
   });
-  assert.equal(calls[1].range, "8KTfQn!A2:K21");
+  assert.equal(calls[2].range, "8KTfQn!A2:K21");
 });
 
 test("daily sync rolls back the inserted 20 rows when writing fails", async () => {
@@ -164,10 +170,40 @@ test("daily sync rolls back the inserted 20 rows when writing fails", async () =
     sheetId: "8KTfQn",
     targetDate: "2026-07-24",
     write: true,
+    onBackup: async () => {},
   }), /simulated write failure/);
 
   assert.deepEqual(calls.map((call) => call.type), ["insert", "write", "delete"]);
   assert.deepEqual(calls[2].dimension, calls[0].dimension);
+});
+
+test("daily sync refuses write mode without a completed backup callback", async () => {
+  const mutations = [];
+  await assert.rejects(
+    runDailySync({
+      feishu: {
+        readMatrix: async () => existingSheet(),
+        insertRows: async () => mutations.push("insert"),
+      },
+      softcon: {
+        fetchDailyRanking: async () => rankingFixture(),
+        fetchSourceLink: async () => "https://viewership.softc.one/stream",
+      },
+      youtube: {
+        fetchChannelMetrics: async (name) => ({
+          url: `https://www.youtube.com/@${encodeURIComponent(name)}`,
+          subscriberCount: 1_000,
+          averageViews: 500,
+          recentVideoTitles: ["Recent video"],
+        }),
+      },
+      sheetId: "8KTfQn",
+      targetDate: "2026-07-24",
+      write: true,
+    }),
+    /backup callback/i,
+  );
+  assert.deepEqual(mutations, []);
 });
 
 test("write mode requires both the CLI flag and an explicit environment gate", () => {

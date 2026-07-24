@@ -210,6 +210,38 @@ test("YouTube client averages the latest six public non-live uploads and keeps S
   assert.equal(calls.every((url) => url.searchParams.get("key") === "yt-key"), true);
 });
 
+test("YouTube client returns zero metrics for a valid channel with no videos", async () => {
+  let calls = 0;
+  const client = createYouTubeClient({
+    apiKey: "yt-key",
+    channelMap: {
+      "시아니클1945": {
+        url: "https://www.youtube.com/channel/empty-channel",
+        channelId: "empty-channel",
+      },
+    },
+    fetchImpl: async () => {
+      calls += 1;
+      return jsonResponse({ items: [{
+        id: "empty-channel",
+        snippet: { title: "시아니클" },
+        statistics: { subscriberCount: "0", videoCount: "0" },
+        contentDetails: { relatedPlaylists: { uploads: "missing-playlist" } },
+      }] });
+    },
+  });
+
+  assert.deepEqual(await client.fetchChannelMetrics("시아니클1945"), {
+    channelId: "empty-channel",
+    url: "https://www.youtube.com/channel/empty-channel",
+    subscriberCount: 0,
+    averageViews: 0,
+    recentVideoTitles: [],
+    videoIds: [],
+  });
+  assert.equal(calls, 1);
+});
+
 test("YouTube client resolves an unmapped creator only from an exact channel-title match", async () => {
   const client = createYouTubeClient({
     apiKey: "yt-key",

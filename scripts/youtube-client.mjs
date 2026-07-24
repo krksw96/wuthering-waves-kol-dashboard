@@ -81,7 +81,23 @@ export function createYouTubeClient({
     const channel = channelPayload.items?.[0];
     const channelId = String(channel?.id || "");
     const uploadsPlaylist = String(channel?.contentDetails?.relatedPlaylists?.uploads || "");
-    if (!channelId || !uploadsPlaylist) {
+    if (!channelId) {
+      throw new Error(`YouTube channel metadata is incomplete for ${creatorName}.`);
+    }
+    const subscriberCount = channel.statistics?.hiddenSubscriberCount
+      ? 0
+      : Number(channel.statistics?.subscriberCount || 0);
+    if (String(channel.statistics?.videoCount) === "0") {
+      return {
+        channelId,
+        url: mapping.url || `https://www.youtube.com/channel/${channelId}`,
+        subscriberCount,
+        averageViews: 0,
+        recentVideoTitles: [],
+        videoIds: [],
+      };
+    }
+    if (!uploadsPlaylist) {
       throw new Error(`YouTube channel metadata is incomplete for ${creatorName}.`);
     }
 
@@ -113,9 +129,7 @@ export function createYouTubeClient({
     return {
       channelId,
       url: mapping.url || `https://www.youtube.com/channel/${channelId}`,
-      subscriberCount: channel.statistics?.hiddenSubscriberCount
-        ? 0
-        : Number(channel.statistics?.subscriberCount || 0),
+      subscriberCount,
       averageViews: Math.round(views.reduce((sum, value) => sum + value, 0) / views.length),
       recentVideoTitles: recent.map((item) => String(item.snippet?.title || "")),
       videoIds: recent.map((item) => item.id),

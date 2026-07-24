@@ -43,6 +43,7 @@ jobs:
           FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
           FEISHU_SHEET_ID: 8KTfQn
           FEISHU_API_BASE_URL: https://open.feishu.cn
+          FEISHU_BACKUP_PATH: feishu-backup.json
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           TARGET_DATE: ${{ inputs.target_date }}
           WRITE_REQUESTED: ${{ inputs.write }}
@@ -58,3 +59,12 @@ jobs:
             args+=("--write")
           fi
           node scripts/sync-feishu-daily.mjs "${args[@]}"
+
+      - name: Upload Feishu value backup
+        if: ${{ always() && inputs.write }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: feishu-backup-${{ github.run_id }}
+          path: feishu-backup.json
+          if-no-files-found: warn
+          retention-days: 30
