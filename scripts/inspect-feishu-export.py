@@ -138,7 +138,8 @@ def _request_bytes(
         except urllib.error.HTTPError as error:
             transient = error.code == 429 or 500 <= error.code < 600
             if not transient or attempt + 1 >= attempts:
-                raise RuntimeError(f"Feishu API HTTP error: {error.code}") from error
+                detail = _safe_http_error_detail(error)
+                raise RuntimeError(f"Feishu API HTTP error: {error.code}{detail}") from error
         except (urllib.error.URLError, TimeoutError) as error:
             if attempt + 1 >= attempts:
                 raise RuntimeError("Feishu API network request failed.") from error
@@ -146,6 +147,20 @@ def _request_bytes(
         sleep(retry_delay_seconds * (2**attempt))
 
     raise RuntimeError("Feishu API request failed after retries.")
+
+
+def _safe_http_error_detail(error):
+    try:
+        payload = json.loads(error.read().decode("utf-8"))
+    except (AttributeError, UnicodeDecodeError, json.JSONDecodeError):
+        return ""
+    if not isinstance(payload, dict):
+        return ""
+    code = payload.get("code")
+    message = payload.get("msg") or payload.get("message")
+    if code is None and not message:
+        return ""
+    return f" (Feishu code {code}: {message})"
 
 
 def _gateway_headers(config):

@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 import tempfile
 import unittest
@@ -83,6 +84,25 @@ class InspectFeishuExportTests(unittest.TestCase):
 
         self.assertEqual(result, b"ok")
         self.assertEqual(len(attempts), 2)
+
+    def test_request_bytes_surfaces_only_safe_feishu_error_fields(self):
+        inspector = load_inspector_module()
+        response = io.BytesIO(b'{"code":1063005,"msg":"export denied","secret":"must-not-leak"}')
+        error = urllib.error.HTTPError(
+            "https://open.feishu.cn/open-apis/drive/v1/export_tasks",
+            400,
+            "Bad Request",
+            {},
+            response,
+        )
+
+        def opener(_request, timeout):
+            del timeout
+            raise error
+
+        with self.assertRaisesRegex(RuntimeError, r"1063005.*export denied") as raised:
+            inspector._request_bytes(opener, "https://example.test/data", attempts=1)
+        self.assertNotIn("must-not-leak", str(raised.exception))
 
     @staticmethod
     def _write_fixture(path):
