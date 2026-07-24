@@ -1,0 +1,60 @@
+name: Sync Feishu daily ranking
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: Optional KST date (YYYY-MM-DD); defaults to the previous completed KST date
+        required: false
+        type: string
+      write:
+        description: Insert and write the daily 20-row block
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-feishu-daily
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run tests
+        run: npm test
+
+      - name: Collect and optionally update Feishu
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
+          FEISHU_SHEET_ID: 8KTfQn
+          FEISHU_API_BASE_URL: https://open.feishu.cn
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          TARGET_DATE: ${{ inputs.target_date }}
+          WRITE_REQUESTED: ${{ inputs.write }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=()
+          if [[ -n "$TARGET_DATE" ]]; then
+            args+=("--date=$TARGET_DATE")
+          fi
+          if [[ "$WRITE_REQUESTED" == "true" ]]; then
+            export FEISHU_WRITE_ENABLED=true
+            args+=("--write")
+          fi
+          node scripts/sync-feishu-daily.mjs "${args[@]}"
