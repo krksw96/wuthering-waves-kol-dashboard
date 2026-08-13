@@ -31,10 +31,14 @@ jobs:
           FEISHU_SPREADSHEET_TOKEN: V9C1sSLU4hOweEtvDRdcBnENnMh
           FEISHU_SHEET_ID: 8KTfQn
           FEISHU_RANGE: ${{ vars.FEISHU_RANGE || 'A:Z' }}
-        run: npm run sync
+          FEISHU_AD_SHEET_ID: 0GfgFb
+          FEISHU_AD_RANGE: B:K
+        run: |
+          npm run sync
+          npm run sync-ad-tags
 
       - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update KOL sheet data"
-          file_pattern: data/kol-data.js
+          file_pattern: data/kol-data.js data/ad-task-video-ids.json
