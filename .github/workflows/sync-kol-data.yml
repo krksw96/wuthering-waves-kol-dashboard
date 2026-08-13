@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"
+    # Refresh advertising-task IDs shortly before the VOD dashboard's 23:00 UTC update.
+    - cron: "45 22 * * *"
 
 permissions:
   contents: write
