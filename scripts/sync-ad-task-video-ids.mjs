@@ -51,12 +51,21 @@ const rows = values.slice(2).map((row) => ({
 const uniqueRows = [...new Map(rows.map((row) => [row.youtubeId, row])).values()];
 if (!uniqueRows.length) throw new Error("Advertising-task sheet returned no YouTube links");
 
+// Some manually entered hyperlink cells are visible to users but occasionally
+// arrive blank through the app OpenAPI. Preserve previously confirmed links so
+// a scheduled sync cannot silently remove their advertising-task tags.
+const previous = JSON.parse(await fs.readFile(outputFile, "utf8").catch(() => '{"rows":[]}'));
+const mergedRows = [...new Map([
+  ...(previous.rows || []).map((row) => [row.youtubeId, row]),
+  ...uniqueRows.map((row) => [row.youtubeId, row]),
+]).values()];
+
 await fs.mkdir(path.dirname(outputFile), { recursive: true });
 await fs.writeFile(outputFile, `${JSON.stringify({
-  meta: { syncedAt: new Date().toISOString(), spreadsheetToken, sheetId, range, resultCount: uniqueRows.length },
-  rows: uniqueRows,
+  meta: { syncedAt: new Date().toISOString(), spreadsheetToken, sheetId, range, resultCount: mergedRows.length },
+  rows: mergedRows,
 }, null, 2)}\n`, "utf8");
-console.log(`Wrote ${uniqueRows.length} advertising-task video IDs to ${outputFile}`);
+console.log(`Wrote ${mergedRows.length} advertising-task video IDs to ${outputFile}`);
 
 function parseCsv(csv) {
   const rows = [];
