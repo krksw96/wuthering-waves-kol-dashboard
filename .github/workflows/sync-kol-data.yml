@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"
+    # 06:17 Asia/Seoul: refresh the public dashboard after the 05:17 Softc collection.
+    - cron: "17 21 * * *"
     # Refresh advertising-task IDs shortly before the VOD dashboard's 23:00 UTC update.
     - cron: "45 22 * * *"
 
