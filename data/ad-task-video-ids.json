@@ -1,10 +1,10 @@
 {
   "meta": {
-    "syncedAt": "2026-09-28T01:09:55.422Z",
+    "syncedAt": "2026-09-28T04:31:49.394Z",
     "spreadsheetToken": "V9C1sSLU4hOweEtvDRdcBnENnMh",
     "sheetId": "0GfgFb",
     "range": "B:K",
-    "resultCount": 250
+    "resultCount": 251
   },
   "rows": [
     {
@@ -1506,6 +1506,12 @@
       "link": "[object Object]",
       "channelTitle": "픽셀",
       "title": "제자로 받아주세요"
+    },
+    {
+      "youtubeId": "FzefgoF26Ac",
+      "link": "[object Object]",
+      "channelTitle": "아카네 리제 AKANE LIZE",
+      "title": "여우의 별자리 「심월과 달의 노래」 (『명조워더링 웨이브』 OST)ㅣ아카네 리제(Akane Lize) 【COVER】"
     }
   ]
 }
