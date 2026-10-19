@@ -1388,7 +1388,8 @@
       const dateSource = dailyRecords.length ? dailyRecords : records;
 
       const ranked = rankRecords(records);
-      const weekly = getWeeklyRanking(records, ranked);
+      // Feed the weekly cards from the per-day dataset so the 7-day window is real.
+      const weekly = getWeeklyRanking(dateSource, ranked);
       selectedCreator = currentRanked()[0]?.creator || ranked[0]?.creator || "";
 
       function format(value) {
@@ -1533,6 +1534,9 @@
       }
 
       function getWeeklyRanking(source, fallback) {
+        // Weekly cards must aggregate the per-day rows that fall inside the 7-day
+        // window. Using the pre-aggregated all-time `records` here leaked lifetime
+        // totals into the "주간" cards (e.g. 625.4h all-time shown as a weekly value).
         const dated = source
           .map((record) => ({ record, date: parseRecordDate(record) }))
           .filter((item) => item.date);
@@ -1540,10 +1544,10 @@
         const latest = new Date(Math.max(...dated.map((item) => item.date.getTime())));
         const start = new Date(latest);
         start.setDate(start.getDate() - 6);
-        const weeklyRecords = dated
+        const weeklyRows = dated
           .filter((item) => item.date >= start && item.date <= latest)
-          .map((item) => item.record)
-          .sort((a, b) => (b.viewershipTotal || b.avgViewers || 0) - (a.viewershipTotal || a.avgViewers || 0));
+          .map((item) => item.record);
+        const weeklyRecords = weeklyRows.length ? aggregateForDisplay(weeklyRows) : [];
         return {
           label: `${formatMonthDay(start)}-${formatMonthDay(latest)}`,
           records: weeklyRecords.length ? weeklyRecords : fallback.slice(0, 6),
