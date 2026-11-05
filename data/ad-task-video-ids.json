@@ -1,10 +1,10 @@
 {
   "meta": {
-    "syncedAt": "2026-11-05T02:44:52.410Z",
+    "syncedAt": "2026-11-05T05:51:10.935Z",
     "spreadsheetToken": "V9C1sSLU4hOweEtvDRdcBnENnMh",
     "sheetId": "0GfgFb",
     "range": "B:K",
-    "resultCount": 259
+    "resultCount": 261
   },
   "rows": [
     {
@@ -1560,6 +1560,18 @@
       "link": "[object Object]",
       "channelTitle": "금사향",
       "title": "목숨을 건 숨바꼭질 #여우의별자리 #명조"
+    },
+    {
+      "youtubeId": "BC4DW-sHMdk",
+      "link": "[object Object]",
+      "channelTitle": "압둘알리과로사",
+      "title": "델크쇼 3.7버전!!"
+    },
+    {
+      "youtubeId": "ap6_2umgI-E",
+      "link": "[object Object]",
+      "channelTitle": "남도형의 블루클럽",
+      "title": "명조 에이메스 성우님이 소개하는, 에이메스 빅스비 보이스 스페셜 키트~♡"
     }
   ]
 }
